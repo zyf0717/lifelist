@@ -5,7 +5,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const handlers = {};
-const el = (id) => ({
+const els = {};
+const el = (id) => (els[id] ??= {
   id, style: {}, textContent: "", value: "2023", min: "",
   addEventListener() {}, classList: { toggle() {} },
 });
@@ -30,4 +31,13 @@ test("dropping a CSV renders two traces plus trip annotations", async () => {
   assert.match(rendered.data[1].name, /^With media \(\d+ species\)$/);
   assert.ok(rendered.layout.annotations.some((a) => a.text === "Bhutan"));
   assert.match(rendered.layout.title.text, /checklists/);
+});
+
+test("a ZIP file gets a helpful error instead of silence", async () => {
+  handlers.drop({
+    preventDefault() {},
+    dataTransfer: { files: [{ text: async () => "PK\u0003\u0004garbage" }] },
+  });
+  await new Promise((r) => setImmediate(r));
+  assert.match(els.error.textContent, /ZIP/);
 });

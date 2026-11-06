@@ -11,12 +11,25 @@ let data = null;
 
 function render() {
   if (!data) return;
-  const f = makeFigure(data, +yearInput.value);
-  Plotly.react("chart", f.data, f.layout, { responsive: true });
+  if (typeof Plotly === "undefined") {
+    errorEl.textContent = "Plotly failed to load (ad blocker?); it is now served from this site, try a hard reload (Ctrl/Cmd+Shift+R).";
+    return;
+  }
+  try {
+    const f = makeFigure(data, +yearInput.value);
+    Plotly.react("chart", f.data, f.layout, { responsive: true });
+    errorEl.textContent = "";
+  } catch (e) {
+    errorEl.textContent = `Render error: ${e.message}`;
+  }
 }
 
 function handleText(text) {
   errorEl.textContent = "";
+  if (text.startsWith("PK")) {
+    errorEl.textContent = "That's a ZIP archive — My eBird zips the download. Unzip it and drop the CSV inside.";
+    return;
+  }
   const rows = parseCsv(text);
   if (!rows.length || !("Common Name" in rows[0]) || !("Date" in rows[0])) {
     errorEl.textContent = "That doesn't look like a My eBird export (missing Common Name / Date columns).";
