@@ -14,7 +14,9 @@
   .controls { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; margin: 8px 0; }
   .controls .row { display: flex; gap: 12px; align-items: center; }
   label { display: flex; gap: 8px; align-items: center; }
-  input[type=number], select { background: #1e232a; color: #d6d9de; border: 1px solid #3a3f46; border-radius: 4px; padding: 4px; }
+  input[type=number], select, button { background: #1e232a; color: #d6d9de; border: 1px solid #3a3f46; border-radius: 4px; padding: 4px; }
+  button { padding: 4px 12px; cursor: pointer; }
+  button:hover { border-color: #5fb4d9; }
   #chart { width: 100%; height: 560px; }
   #dropzone { position: fixed; inset: 0; display: none; place-items: center;
     background: rgba(20,23,28,.92); border: 3px dashed #5fb4d9; z-index: 10; font-size: 22px; }
@@ -31,6 +33,7 @@
   <div class="controls">
     <div class="row">
       <input id="file" type="file" accept=".csv,text/csv">
+      <button id="download" style="display:none">Download PNG</button>
     </div>
     <label id="year-wrap" style="display:none">Start year <select id="start-year"></select></label>
     <label id="home-wrap" style="display:none">Default <select id="home-country"></select></label>

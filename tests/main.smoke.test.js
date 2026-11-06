@@ -28,6 +28,7 @@ test("dropping a CSV renders two traces plus trip annotations", async () => {
   assert.ok(rendered, "Plotly.react was not called");
   assert.equal(els["home-country"].value, "SG"); // sample.csv is mostly Singapore checklists
   assert.equal(els["year-wrap"].style.display, ""); // start-year appears after parse
+  assert.equal(els["download"].style.display, ""); // download button appears after parse
   assert.match(els["start-year"].innerHTML, /<option>2023<\/option>/);
   assert.equal(els["start-year"].value, "2023"); // defaults to first year in the data
   assert.equal(rendered.data.length, 3);

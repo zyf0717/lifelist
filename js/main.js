@@ -8,6 +8,7 @@ const yearSel = document.getElementById("start-year");
 const yearWrap = document.getElementById("year-wrap");
 const homeSel = document.getElementById("home-country");
 const homeWrap = document.getElementById("home-wrap");
+const downloadBtn = document.getElementById("download");
 let rows = null;
 let data = null;
 
@@ -43,6 +44,7 @@ function handleText(text) {
   yearSel.value = years[0];
   yearWrap.style.display = "";
   homeWrap.style.display = "";
+  downloadBtn.style.display = "";
   const counts = countryCounts(rows);
   homeSel.innerHTML = counts
     .map((c) => `<option value="${c.code}">${c.name} (${c.checklists})</option>`)
@@ -61,6 +63,9 @@ function rebuild() {
 const handleFile = (file) => file.text().then(handleText);
 
 yearSel.addEventListener("change", render);
+downloadBtn.addEventListener("click", () => {
+  Plotly.downloadAsImage(document.getElementById("chart"), { format: "png", filename: "ebird-lifelist", scale: 2 });
+});
 homeSel.addEventListener("change", rebuild);
 document.getElementById("file").addEventListener("change", (e) => e.target.files[0] && handleFile(e.target.files[0]));
 
