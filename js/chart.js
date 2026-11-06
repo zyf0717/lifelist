@@ -11,13 +11,13 @@ export function makeFigure(d, startYear) {
   const title = `Life list vs documented species — ${d.nChecklists} checklists (${fmtMonthYear(start)} – ${fmtMonthYear(end)})`;
 
   const shapes = [], annotations = [];
-  d.trips.forEach((t, i) => {
+  d.trips.forEach((t) => {
     const mid = new Date((Date.parse(t.start) + Date.parse(t.end)) / 2).toISOString().slice(0, 10);
     shapes.push({ type: "line", xref: "x", yref: "paper", x0: mid, x1: mid, y0: 0, y1: 1,
       line: { color: TRIP, width: 1 }, opacity: 0.45 });
-    annotations.push({ text: t.region, xref: "x", yref: "paper", x: mid, y: 1.045,
-      textangle: 90, xanchor: "right", showarrow: false,
-      font: { size: 9, color: TRIP }, yshift: 4 + (i % 2) * 13 });
+    annotations.push({ text: t.region, xref: "x", yref: "paper", x: mid, y: 1.10,
+      textangle: -90, xanchor: "center", yanchor: "top", showarrow: false,
+      font: { size: 9, color: TRIP } });
   });
 
   const data = [
@@ -29,7 +29,7 @@ export function makeFigure(d, startYear) {
       fill: "tonexty", fillcolor: "rgb(29,42,50)" },
     { x: d.withMedia.x, y: d.withMedia.y, type: "scatter", mode: "lines",
       name: `With media (${d.nWithMedia} species)`,
-      line: { color: MEDIA, width: 2, dash: "dash", shape: "hv" } },
+      line: { color: MEDIA, width: 2, shape: "hv" } },
   ];
 
   const layout = {
