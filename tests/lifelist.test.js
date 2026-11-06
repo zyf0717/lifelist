@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { parseCsv, buildSeries, regionOf, countryCounts, taxonKey } from "../js/lifelist.js";
+import { parseCsv, buildSeries, regionOf, countryCounts, speciesKey } from "../js/lifelist.js";
 import { makeFigure } from "../js/chart.js";
 
 const sample = readFileSync(fileURLToPath(new URL("../sample.csv", import.meta.url)), "utf8");
@@ -21,16 +21,16 @@ test("M3: a leading UTF-8 BOM does not corrupt the first header", () => {
   assert.deepEqual(bom, base); // same rows, first header clean
   const d = buildSeries(bom);
   assert.equal(d.nChecklists, buildSeries(base).nChecklists);
-  assert.equal(d.nTaxa, buildSeries(base).nTaxa);
+  assert.equal(d.nSpecies, buildSeries(base).nSpecies);
   // BOM only stripped at the start: a \ufeff inside the text is preserved.
   assert.equal(parseCsv('a,b\n\ufeffx,y\n')[0].a, "\ufeffx");
 });
 
 test("buildSeries dedupes taxa and counts cumulatively", () => {
   const d = buildSeries(parseCsv(sample));
-  assert.ok(d.nTaxa > 0);
-  assert.deepEqual(d.lifeList.y, [...Array(d.nTaxa).keys()].map((i) => i + 1));
-  assert.ok(d.nWithMedia <= d.nTaxa);
+  assert.ok(d.nSpecies > 0);
+  assert.deepEqual(d.lifeList.y, [...Array(d.nSpecies).keys()].map((i) => i + 1));
+  assert.ok(d.nWithMedia <= d.nSpecies);
 });
 
 test("H1: dedupe unit is the scientific name, not the common name", () => {
@@ -39,33 +39,49 @@ test("H1: dedupe unit is the scientific name, not the common name", () => {
   // Reference total: distinct normalized scientific names among valid rows.
   const ref = new Set(rows
     .filter((r) => !Number.isNaN(Date.parse(r.Date)) && r["Common Name"])
-    .map(taxonKey));
-  assert.equal(d.nTaxa, ref.size);
-  assert.equal(d.nTaxa, 22); // sample.csv reference export total
+    .map(speciesKey).filter(Boolean));
+  assert.equal(d.nSpecies, ref.size);
+  assert.equal(d.nSpecies, 21); // sample.csv reference export total (feral pigeon excluded)
   // Same taxon renamed in eBird (new common name, same scientific name) dedupes.
   const renamed = [
     { "Common Name": "Old Name", "Scientific Name": "Turdus migratorius", Date: "2023-01-01", "Submission ID": "s1", "State/Province": "SG-" },
     { "Common Name": "American Robin (rev.)", "Scientific Name": "Turdus migratorius", Date: "2024-01-01", "Submission ID": "s2", "State/Province": "SG-" },
   ];
-  assert.equal(buildSeries(renamed).nTaxa, 1);
+  assert.equal(buildSeries(renamed).nSpecies, 1);
   // Distinct taxa sharing one common name stay distinct.
   const shared = [
     { "Common Name": "Common Sandpiper", "Scientific Name": "Actitis hypoleucos", Date: "2023-01-01", "Submission ID": "s1", "State/Province": "SG-" },
     { "Common Name": "Common Sandpiper", "Scientific Name": "Actitis macularius", Date: "2023-01-02", "Submission ID": "s2", "State/Province": "SG-" },
   ];
-  assert.equal(buildSeries(shared).nTaxa, 2);
+  assert.equal(buildSeries(shared).nSpecies, 2);
   // Whitespace/case variants of the same scientific name normalize together.
   const messy = [
     { "Common Name": "A", "Scientific Name": "  egretta  GARZETTA ", Date: "2023-01-01", "Submission ID": "s1", "State/Province": "SG-" },
     { "Common Name": "B", "Scientific Name": "Egretta garzetta", Date: "2023-01-02", "Submission ID": "s2", "State/Province": "SG-" },
   ];
-  assert.equal(buildSeries(messy).nTaxa, 1);
+  assert.equal(buildSeries(messy).nSpecies, 1);
   // Fallback to Common Name when Scientific Name is absent.
   const fallback = [
     { "Common Name": "Mystery sp.", "Scientific Name": "", Date: "2023-01-01", "Submission ID": "s1", "State/Province": "SG-" },
     { "Common Name": "Mystery sp.", "Scientific Name": "", Date: "2023-01-02", "Submission ID": "s2", "State/Province": "SG-" },
   ];
-  assert.equal(buildSeries(fallback).nTaxa, 1);
+  assert.equal(buildSeries(fallback).nSpecies, 1);
+});
+
+test("speciesKey: subspecies roll up; unknowns, hybrids, domestic excluded", () => {
+  const k = (sci) => speciesKey({ "Scientific Name": sci });
+  assert.equal(k("Oriolus chinensis diffusus"), "oriolus chinensis"); // trinomial
+  assert.equal(k("Apus affinis [nipalensis Group]"), "apus affinis"); // bracketed group
+  assert.equal(k("Aerodramus fuciphagus germani/amechanus"), "aerodramus fuciphagus"); // subspecies group
+  assert.equal(k("Treron sp."), null);
+  assert.equal(k("Nectariniidae sp. (sunbird sp.)"), null);
+  assert.equal(k("Charadriidae sp."), null); // family level
+  assert.equal(k("Collocalia/Aerodramus sp."), null);
+  assert.equal(k("Terpsiphone incei/affinis"), null); // species-group slash
+  assert.equal(k("Mycteria cinerea x leucocephala"), null); // hybrid
+  assert.equal(k("Cairina moschata (Domestic type)"), null); // domestic
+  assert.equal(k("Columba livia (Feral Pigeon)"), null); // feral
+  assert.equal(k("Egretta garzetta"), "egretta garzetta");
 });
 
 test("media boolean uses the first date the species had media", () => {
@@ -89,7 +105,7 @@ test("M1: media curve is dated by observation, and wording never claims upload d
   assert.equal(d.withMedia.x[0], "2023-02-10");
   const f = makeFigure(d, 2020);
   const mediaTrace = f.data[2];
-  assert.match(mediaTrace.name, /^Taxa with media \(\d+\)$/);
+  assert.match(mediaTrace.name, /^Species with media \(\d+\)$/);
   assert.doesNotMatch(mediaTrace.name, /upload/i);
   assert.doesNotMatch(f.layout.title.text, /upload/i);
 });
@@ -99,7 +115,7 @@ test("rows with invalid dates are ignored", () => {
     { "Common Name": "X", Date: "nope", "Submission ID": "s1", "State/Province": "SG-", "ML Catalog Numbers": "" },
     { "Common Name": "Y", Date: "2023-01-01", "Submission ID": "s2", "State/Province": "SG-", "ML Catalog Numbers": "" },
   ];
-  assert.equal(buildSeries(rows).nTaxa, 1);
+  assert.equal(buildSeries(rows).nSpecies, 1);
 });
 
 test("H2: extrema are tracked incrementally, no array spread", () => {
@@ -110,18 +126,18 @@ test("H2: extrema are tracked incrementally, no array spread", () => {
     rows.push({ "Common Name": `S${i}`, "Scientific Name": `Sci s${i}`, Date: day, "Submission ID": `sub${i}`, "State/Province": "SG-", "ML Catalog Numbers": "" });
   }
   const d = buildSeries(rows);
-  assert.equal(d.nTaxa, 150000);
+  assert.equal(d.nSpecies, 150000);
   assert.equal(d.minDate, Date.UTC(2000, 0, 1));
   assert.equal(d.maxDate, Date.UTC(2000, 0, 1) + 149999 * 86400000);
   // Single observation: min === max.
   const one = buildSeries([rows[0]]);
   assert.equal(one.minDate, one.maxDate);
-  assert.equal(one.nTaxa, 1);
+  assert.equal(one.nSpecies, 1);
   // No valid observations: explicit nulls.
   const none = buildSeries([{ "Common Name": "X", Date: "not a date", "Submission ID": "s1", "State/Province": "SG-" }]);
   assert.equal(none.minDate, null);
   assert.equal(none.maxDate, null);
-  assert.equal(none.nTaxa, 0);
+  assert.equal(none.nSpecies, 0);
   assert.equal(buildSeries([]).minDate, null);
 });
 
@@ -158,7 +174,7 @@ test("M2: later start year keeps the cumulative baseline as a synthetic step poi
   assert.equal(mid.data[2].line.shape, "hv");
   assert.deepEqual(mid.data[0].x, mid.data[1].x);
   // buildSeries totals are untouched by the display filter.
-  assert.equal(d.nTaxa, 2);
+  assert.equal(d.nSpecies, 2);
 });
 
 test("trip clustering: gap splits, min rows filters, SG excluded, CN-46 is Hainan", () => {

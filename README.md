@@ -1,18 +1,19 @@
 # lifelist
 
 Drag in your [My eBird](https://myebird.org) CSV export (My eBird → Download my data) and get an
-interactive life-list chart: cumulative recorded taxa, taxa documented with media, and auto-detected
+interactive life-list chart: cumulative recorded species, species documented with media, and auto-detected
 birding trips. Everything runs in your browser — your data is never uploaded.
 
 Live: https://zyf0717.github.io/lifelist · Demo with sample data: add `?demo` to the URL.
 
 ## Chart
 
-- **Life list** — cumulative recorded taxa, each counted at its first-sighting date. Taxa are
-  deduplicated by normalized Scientific Name (fallback: Common Name). This is a name-based tally,
-  **not** eBird's official life-list total: subspecies, hybrids, and unidentified taxa are counted
-  by name, not by eBird's taxonomy and countability rules.
-- **Taxa with media** — cumulative taxa that have at least one Macaulay Library item attached,
+- **Life list** — cumulative recorded species, each counted at its first-sighting date. Species are
+  deduplicated by the Scientific Name binomial (fallback: Common Name); subspecies roll up into their
+  species, and unidentified records (`sp.`, species groups), hybrids, and domestic/feral forms are
+  excluded. This lands close to eBird's official life-list total but is still a name-based tally,
+  **not** eBird's taxonomy and countability rules.
+- **Species with media** — cumulative species that have at least one Macaulay Library item attached,
   counted at the **observation date** of the earliest sighting that carries media. The CSV contains
   no upload timestamps, so media upload dates cannot be inferred from it; an upload-date timeline
   would need separate Macaulay Library metadata.

@@ -11,7 +11,7 @@ export function makeFigure(d, startYear, opts = {}) {
   const s = ex ? 1.5 : 1; // export type is 1.5x larger relative to the image
   const start = `${startYear}-01-01`;
   const end = new Date(d.maxDate + 20 * 86400000).toISOString().slice(0, 10);
-  const title = `Life list vs taxa with media — ${d.nChecklists} checklists (${fmtMonthYear(start)} – ${fmtMonthYear(end)})`;
+  const title = `Life list vs species with media — ${d.nChecklists} checklists (${fmtMonthYear(start)} – ${fmtMonthYear(end)})`;
 
   const shapes = [], annotations = [];
   // Trip labels sit at 45° up-right from the top of their vertical line,
@@ -35,7 +35,7 @@ export function makeFigure(d, startYear, opts = {}) {
 
   // Preserve the cumulative baseline when the start year skips early
   // sightings: prepend a synthetic step point at the start date with y equal
-  // to the number of taxa first recorded before it, then keep points on or
+  // to the number of species first recorded before it, then keep points on or
   // after it. buildSeries() totals are untouched; shape "hv" renders the step.
   const display = (series) => {
     const before = series.x.filter((x) => x < start).length;
@@ -51,11 +51,11 @@ export function makeFigure(d, startYear, opts = {}) {
     { x: life.x, y: life.x.map(() => 0), type: "scatter", mode: "lines",
       line: { width: 0 }, showlegend: false, hoverinfo: "skip" },
     { x: life.x, y: life.y, type: "scatter", mode: "lines",
-      name: `Life list (${d.nTaxa} taxa)`,
+      name: `Life list (${d.nSpecies} species)`,
       line: { color: LINE, width: 2, shape: "hv" },
       fill: "tonexty", fillcolor: "rgb(29,42,50)" },
     { x: media.x, y: media.y, type: "scatter", mode: "lines",
-      name: `Taxa with media (${d.nWithMedia})`,
+      name: `Species with media (${d.nWithMedia})`,
       line: { color: MEDIA, width: 2, shape: "hv" } },
   ];
 
@@ -63,7 +63,7 @@ export function makeFigure(d, startYear, opts = {}) {
   // auto-spaces the title ~labelW+27px off the axis; title.standoff adds to
   // the label's left edge, so gap ≈ standoff + labelW + 4. Size it to 1.25x
   // and grow l so the title never clamps against the paper edge.
-  const yLabelW = String(Math.ceil((d.nTaxa * 1.12) / 50) * 50).length * 9.5 * k;
+  const yLabelW = String(Math.ceil((d.nSpecies * 1.12) / 50) * 50).length * 9.5 * k;
   const yStandoff = ex ? Math.round(0.25 * yLabelW + 30) : 0;
 
   const layout = {
@@ -86,8 +86,8 @@ export function makeFigure(d, startYear, opts = {}) {
     // for linecolor/ticks to render at all.
     xaxis: { range: [start, end], showgrid: false, showline: true, linecolor: "#3a3f46",
       ticks: "outside", ticklen: 6 * k, tickwidth: ex ? 2 * k : 1, tickcolor: "#3a3f46", dtick: "M12" },
-    yaxis: { title: { text: "Recorded taxa on life list", ...(ex && { standoff: yStandoff }) }, gridcolor: "#242930", zerolinecolor: "#3a3f46", linecolor: "#3a3f46",
-      range: [0, Math.ceil((d.nTaxa * 1.12) / 50) * 50] },
+    yaxis: { title: { text: "Recorded species on life list", ...(ex && { standoff: yStandoff }) }, gridcolor: "#242930", zerolinecolor: "#3a3f46", linecolor: "#3a3f46",
+      range: [0, Math.ceil((d.nSpecies * 1.12) / 50) * 50] },
     legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)", traceorder: "normal" },
     hovermode: "x unified",
     shapes, annotations,

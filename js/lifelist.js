@@ -75,13 +75,25 @@ export function countryCounts(rows) {
       a.name.localeCompare(b.name));
 }
 
-// Dedupe unit: one "taxon" = one normalized Scientific Name (fallback: Common
-// Name). This is a name-based tally, NOT eBird's official countable-species
-// total — subspecies, hybrids, and unidentified taxa are counted by name,
-// not by eBird's taxonomy and countability rules.
-export function taxonKey(row) {
-  const sci = String(row["Scientific Name"] ?? "").trim().replace(/\s+/g, " ").toLowerCase();
-  return sci || String(row["Common Name"] ?? "").trim().toLowerCase();
+// Counting unit: one "species" = the binomial from Scientific Name (fallback:
+// Common Name). Subspecies (trinomials, "[Group]" names, and subspecies-group
+// slashes like "Aerodramus fuciphagus germani/amechanus") roll up into their
+// species. Unknowns (trailing "sp.", family-level names, species-group
+// slashes), hybrids ("x"), and domestic/feral forms are excluded entirely
+// (owner call 2026-11-07), bringing the tally close to eBird's countable
+// total — still a name-based count, not eBird's official taxonomy.
+export function speciesKey(row) {
+  const raw = String(row["Scientific Name"] ?? "").trim().replace(/\s+/g, " ");
+  if (!raw) return String(row["Common Name"] ?? "").trim().toLowerCase() || null;
+  if (/\((?:Domestic type|Feral .*)\)/i.test(raw)) return null; // domestic/feral
+  const bare = raw.replace(/\[.*?\]/g, "").replace(/\(.*?\)/g, "").trim();
+  if (/\bx\b/.test(bare)) return null; // hybrid
+  if (/\bsp\.?$/i.test(bare)) return null; // not identified to species
+  const words = bare.split(/\s+/);
+  // A slash inside the 3rd word is one species' subspecies group (roll up);
+  // any other slash separates species — unknown, excluded.
+  if (words.some((w) => w.includes("/")) && !(words.length === 3 && words[2].includes("/"))) return null;
+  return words.slice(0, 2).join(" ").toLowerCase();
 }
 
 const DAY = 86400000;
@@ -97,7 +109,7 @@ export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDa
     if (d > maxDate) maxDate = d;
     obs.push({
       date: d,
-      taxon: taxonKey(r),
+      taxon: speciesKey(r),
       submission: r["Submission ID"],
       media: String(r["ML Catalog Numbers"] ?? "").trim() !== "",
       sp: r["State/Province"],
@@ -109,6 +121,7 @@ export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDa
   const submissions = new Set();
   for (const o of obs) {
     submissions.add(o.submission);
+    if (o.taxon === null) continue; // excluded: unknown / hybrid / domestic
     if (!firstSeen.has(o.taxon) || o.date < firstSeen.get(o.taxon)) firstSeen.set(o.taxon, o.date);
     if (o.media && (!firstMedia.has(o.taxon) || o.date < firstMedia.get(o.taxon))) firstMedia.set(o.taxon, o.date);
   }
@@ -147,7 +160,7 @@ export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDa
 
   return {
     lifeList, withMedia, trips,
-    nTaxa: lifeList.y.length,
+    nSpecies: lifeList.y.length,
     nWithMedia: withMedia.y.length,
     nChecklists: submissions.size,
     minDate: Number.isFinite(minDate) ? minDate : null,
