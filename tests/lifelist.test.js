@@ -89,7 +89,7 @@ test("M1: media curve is dated by observation, and wording never claims upload d
   assert.equal(d.withMedia.x[0], "2023-02-10");
   const f = makeFigure(d, 2020);
   const mediaTrace = f.data[2];
-  assert.match(mediaTrace.name, /by observation date/);
+  assert.match(mediaTrace.name, /^Taxa with media \(\d+\)$/);
   assert.doesNotMatch(mediaTrace.name, /upload/i);
   assert.doesNotMatch(f.layout.title.text, /upload/i);
 });
