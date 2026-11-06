@@ -211,6 +211,32 @@ test("countryCounts ranks by checklist count", () => {
   assert.equal(counts[1].code, "SG");
 });
 
+test("home inference tiebreaks: recency, then rows, then name", () => {
+  const mk = (sp, date, sub, cn = "C") => ({
+    "Common Name": cn, "Scientific Name": cn, Date: date,
+    "Submission ID": sub, "State/Province": sp, "ML Catalog Numbers": "",
+  });
+  // Equal checklists (2 each): the country with the more recent observation wins.
+  let counts = countryCounts([
+    mk("SG-", "2024-01-01", "a1"), mk("SG-", "2024-01-02", "a2"),
+    mk("MY-", "2023-06-01", "b1"), mk("MY-", "2024-05-01", "b2"),
+  ]);
+  assert.equal(counts[0].code, "MY");
+  // Equal checklists and last date: more observation rows wins.
+  counts = countryCounts([
+    mk("SG-", "2024-01-01", "a1"), mk("SG-", "2024-01-01", "a1", "D"),
+    mk("MY-", "2024-01-01", "b1"),
+  ]);
+  assert.equal(counts[0].code, "SG");
+  // Fully tied: alphabetical by name (Malaysia before Singapore).
+  counts = countryCounts([
+    mk("SG-", "2024-01-01", "a1"),
+    mk("MY-", "2024-01-01", "b1"),
+  ]);
+  assert.equal(counts[0].code, "MY");
+  assert.deepEqual(counts.map((c) => c.code), ["MY", "SG"]);
+});
+
 test("sample fixture produces a chartable dataset", () => {
   const d = buildSeries(parseCsv(sample));
   assert.ok(d.nChecklists >= 5);

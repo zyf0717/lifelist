@@ -17,8 +17,9 @@ Live: https://zyf0717.github.io/lifelist · Demo with sample data: add `?demo` t
   no upload timestamps, so media upload dates cannot be inferred from it; an upload-date timeline
   would need separate Macaulay Library metadata.
 - **Trip labels** — checklists outside your home country clustered by ≤7-day gaps; trips with ≥10 rows
-  get a marker. Default country is selectable (from the countries in your file) and defaults to your
-  most-visited country. Start year is a dropdown of the years present in the data, defaulting to the
+  get a marker. Default country is inferred from the file: the country with the highest share of
+  checklists wins; ties break by most recent observation, then total rows, then name. Start year is
+  a dropdown of the years present in the data, defaulting to the
   first year. Both selectors appear only after the file parses.
 
 ## Development

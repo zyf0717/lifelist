@@ -46,19 +46,33 @@ export function isHome(stateProvince, homeCode) {
   return sp === homeCode || sp.startsWith(homeCode + "-");
 }
 
-// Countries present in the data, ranked by checklist count — feeds the home selector.
+// Countries present in the data, ranked by checklist share — feeds the home
+// selector, whose default is the top entry. Ties on checklist count break by
+// most recent observation (home is where you bird now), then total observation
+// rows, then name.
 export function countryCounts(rows) {
   const byCode = new Map();
   for (const r of rows) {
-    if (Number.isNaN(Date.parse(r["Date"])) || !r["Common Name"]) continue;
+    const d = Date.parse(r["Date"]);
+    if (Number.isNaN(d) || !r["Common Name"]) continue;
     const code = String(r["State/Province"] ?? "").split("-")[0];
     if (!code) continue;
-    if (!byCode.has(code)) byCode.set(code, new Set());
-    byCode.get(code).add(r["Submission ID"]);
+    if (!byCode.has(code)) byCode.set(code, { subs: new Set(), rows: 0, last: -Infinity });
+    const c = byCode.get(code);
+    c.subs.add(r["Submission ID"]);
+    c.rows += 1;
+    if (d > c.last) c.last = d;
   }
   return [...byCode.entries()]
-    .map(([code, subs]) => ({ code, name: COUNTRY[code] ?? code, checklists: subs.size }))
-    .sort((a, b) => b.checklists - a.checklists || a.name.localeCompare(b.name));
+    .map(([code, c]) => ({
+      code, name: COUNTRY[code] ?? code,
+      checklists: c.subs.size, rows: c.rows, lastDate: c.last,
+    }))
+    .sort((a, b) =>
+      b.checklists - a.checklists ||
+      b.lastDate - a.lastDate ||
+      b.rows - a.rows ||
+      a.name.localeCompare(b.name));
 }
 
 // Dedupe unit: one "taxon" = one normalized Scientific Name (fallback: Common
