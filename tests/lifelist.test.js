@@ -15,6 +15,17 @@ test("parseCsv handles quoted commas, escaped quotes, CRLF", () => {
   assert.equal(rows[1].b, "2");
 });
 
+test("M3: a leading UTF-8 BOM does not corrupt the first header", () => {
+  const base = parseCsv(sample);
+  const bom = parseCsv("\ufeff" + sample);
+  assert.deepEqual(bom, base); // same rows, first header clean
+  const d = buildSeries(bom);
+  assert.equal(d.nChecklists, buildSeries(base).nChecklists);
+  assert.equal(d.nTaxa, buildSeries(base).nTaxa);
+  // BOM only stripped at the start: a \ufeff inside the text is preserved.
+  assert.equal(parseCsv('a,b\n\ufeffx,y\n')[0].a, "\ufeffx");
+});
+
 test("buildSeries dedupes taxa and counts cumulatively", () => {
   const d = buildSeries(parseCsv(sample));
   assert.ok(d.nTaxa > 0);

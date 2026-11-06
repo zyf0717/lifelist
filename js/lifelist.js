@@ -2,6 +2,9 @@
 // No DOM, no Plotly — importable from node tests and the browser alike.
 
 export function parseCsv(text) {
+  // A leading UTF-8 BOM would glue \uFEFF onto the first header name and break
+  // column lookup / checklist dedup. Strip only the initial one.
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
   const rows = [];
   let row = [], field = "", inQuotes = false;
   const pushField = () => { row.push(field); field = ""; };
