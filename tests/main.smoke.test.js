@@ -34,7 +34,7 @@ test("dropping a CSV renders two traces plus trip annotations", async () => {
   assert.equal(rendered.data.length, 3);
   assert.equal(rendered.data[1].fill, "tonexty");
   assert.match(rendered.data[1].name, /^Life list \(\d+ taxa\)$/);
-  assert.match(rendered.data[2].name, /^With media \(\d+ taxa\)$/);
+  assert.match(rendered.data[2].name, /^Taxa with media \(\d+\) — by observation date$/);
   assert.ok(rendered.layout.annotations.some((a) => a.text === "Bhutan"));
   assert.match(rendered.layout.title.text, /checklists/);
 });

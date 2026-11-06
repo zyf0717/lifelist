@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { parseCsv, buildSeries, regionOf, countryCounts, taxonKey } from "../js/lifelist.js";
+import { makeFigure } from "../js/chart.js";
 
 const sample = readFileSync(fileURLToPath(new URL("../sample.csv", import.meta.url)), "utf8");
 
@@ -64,6 +65,22 @@ test("media boolean uses the first date the species had media", () => {
   const d = buildSeries(rows);
   assert.equal(d.lifeList.x[0], "2023-01-01");
   assert.equal(d.withMedia.x[0], "2023-05-01");
+});
+
+test("M1: media curve is dated by observation, and wording never claims upload date", () => {
+  // A 2020 sighting gets media attached later (on the 2023 re-sighting row);
+  // the media point lands on the 2023 observation date, not an inferred upload.
+  const rows = [
+    { "Common Name": "X", "Scientific Name": "X y", Date: "2020-06-01", "Submission ID": "s1", "State/Province": "SG-", "ML Catalog Numbers": "" },
+    { "Common Name": "X", "Scientific Name": "X y", Date: "2023-02-10", "Submission ID": "s2", "State/Province": "SG-", "ML Catalog Numbers": "12345" },
+  ];
+  const d = buildSeries(rows);
+  assert.equal(d.withMedia.x[0], "2023-02-10");
+  const f = makeFigure(d, 2020);
+  const mediaTrace = f.data[2];
+  assert.match(mediaTrace.name, /by observation date/);
+  assert.doesNotMatch(mediaTrace.name, /upload/i);
+  assert.doesNotMatch(f.layout.title.text, /upload/i);
 });
 
 test("rows with invalid dates are ignored", () => {

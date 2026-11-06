@@ -12,8 +12,10 @@ Live: https://zyf0717.github.io/lifelist · Demo with sample data: add `?demo` t
   deduplicated by normalized Scientific Name (fallback: Common Name). This is a name-based tally,
   **not** eBird's official life-list total: subspecies, hybrids, and unidentified taxa are counted
   by name, not by eBird's taxonomy and countability rules.
-- **With media** — cumulative species that have at least one Macaulay Library item attached,
-  counted at the date the media was first uploaded.
+- **Taxa with media** — cumulative taxa that have at least one Macaulay Library item attached,
+  counted at the **observation date** of the earliest sighting that carries media. The CSV contains
+  no upload timestamps, so media upload dates cannot be inferred from it; an upload-date timeline
+  would need separate Macaulay Library metadata.
 - **Trip labels** — checklists outside your home country clustered by ≤7-day gaps; trips with ≥10 rows
   get a marker. Default country is selectable (from the countries in your file) and defaults to your
   most-visited country. Start year is a dropdown of the years present in the data, defaulting to the

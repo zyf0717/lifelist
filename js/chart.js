@@ -41,7 +41,7 @@ export function makeFigure(d, startYear, opts = {}) {
       line: { color: LINE, width: 2, shape: "hv" },
       fill: "tonexty", fillcolor: "rgb(29,42,50)" },
     { x: d.withMedia.x, y: d.withMedia.y, type: "scatter", mode: "lines",
-      name: `With media (${d.nWithMedia} taxa)`,
+      name: `Taxa with media (${d.nWithMedia}) — by observation date`,
       line: { color: MEDIA, width: 2, shape: "hv" } },
   ];
 
