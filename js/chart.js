@@ -27,6 +27,9 @@ export function makeFigure(d, startYear, opts = {}) {
       line: { color: TRIP, width: 1 }, opacity: 0.45 });
     annotations.push({ text: t.region, xref: "x", yref: "paper", x: mid,
       y: 1, textangle: -45, xanchor: "left", yanchor: "bottom", showarrow: false,
+      // pull the label left so the first char's centre sits on the line
+      // (measured: rotated bbox left edge lands ~0.77x the font size right of x)
+      xshift: -Math.round(0.77 * tripFont),
       font: { size: tripFont, color: TRIP } });
   });
 
