@@ -8,7 +8,7 @@ const fmtMonthYear = (iso) =>
 export function makeFigure(d, startYear, opts = {}) {
   const ex = opts.exportSize || null; // {width,height}: PNG export rendered at exact pixels
   const k = ex ? ex.height / 1080 : 1; // proportional px so exports match at any resolution
-  const s = ex ? 1.5 : 1; // export type is 1.5x larger relative to the image
+  const s = ex ? 2 : 1; // export type is 2x larger relative to the image
   const start = `${startYear}-01-01`;
   const end = new Date(d.maxDate + 20 * 86400000).toISOString().slice(0, 10);
   const title = `Life list vs documented species — ${d.nChecklists} checklists (${fmtMonthYear(start)} – ${fmtMonthYear(end)})`;
@@ -46,7 +46,7 @@ export function makeFigure(d, startYear, opts = {}) {
     paper_bgcolor: BG, plot_bgcolor: BG,
     font: { color: FG, ...(ex && { size: 12 * s * k }) },
     title: { text: title, font: { size: 15 * s * k } },
-    margin: ex ? { t: 60 * k, r: 20 * k, b: 50 * k, l: 60 * k } : { t: 150, r: 20, b: 50, l: 60 },
+    margin: ex ? { t: 80 * k, r: 60 * k, b: 70 * k, l: 110 * k } : { t: 150, r: 20, b: 50, l: 60 },
     xaxis: { range: [start, end], gridcolor: "#3a3f46", linecolor: "#3a3f46", dtick: "M12" },
     yaxis: { title: { text: "Species on life list" }, gridcolor: "#242930", zerolinecolor: "#3a3f46", linecolor: "#3a3f46",
       range: [0, Math.ceil((d.nSpecies * 1.12) / 50) * 50] },
