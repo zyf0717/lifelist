@@ -27,7 +27,7 @@ Static site, no build step. `js/lifelist.js` holds the pure data logic (CSV pars
 building, trip clustering) and is tested with node's built-in runner:
 
 ```sh
-node --test tests/
+node --test                      # unit + smoke tests (run from the repo root)
 python3 -m http.server 8000   # then open http://localhost:8000/?demo
 ```
 
