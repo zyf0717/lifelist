@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lifelist — eBird life list charts</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+  :root { color-scheme: dark; }
+  body { background: #14171c; color: #d6d9de; font: 14px/1.5 system-ui, sans-serif; margin: 0; }
+  main { max-width: 1150px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .controls { display: flex; gap: 16px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
+  label { display: flex; gap: 8px; align-items: center; }
+  input[type=number] { width: 5.5em; background: #1e232a; color: #d6d9de; border: 1px solid #3a3f46; border-radius: 4px; padding: 4px; }
+  #status { color: #8b93a0; }
+  #chart { width: 100%; height: 560px; }
+  #dropzone { position: fixed; inset: 0; display: none; place-items: center;
+    background: rgba(20,23,28,.92); border: 3px dashed #5fb4d9; z-index: 10; font-size: 22px; }
+  #dropzone.over { display: grid; }
+  #hint { border: 2px dashed #3a3f46; border-radius: 8px; padding: 40px; text-align: center; }
+  #error { color: #e06c75; min-height: 1.5em; }
+  footer { color: #8b93a0; font-size: 12px; margin-top: 12px; }
+  a { color: #5fb4d9; }
+</style>
+</head>
+<body>
+<main>
+  <h1>lifelist</h1>
+  <div class="controls">
+    <label>Start year <input id="start-year" type="number" min="1900" max="2100" value="2023"></label>
+    <label>or <input id="file" type="file" accept=".csv,text/csv"></label>
+    <span id="status"></span>
+  </div>
+  <div id="error"></div>
+  <div id="hint">Drag your <code>MyEBirdData.csv</code> here (My eBird → Download my data). Nothing leaves your browser.</div>
+  <div id="chart"></div>
+  <footer>Data is parsed locally in your browser; no upload. Add <code>?demo</code> to the URL for sample data. Source: <a href="https://github.com/zyf0717/lifelist">github.com/zyf0717/lifelist</a></footer>
+</main>
+<div id="dropzone">Drop the CSV anywhere</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

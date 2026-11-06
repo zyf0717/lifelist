@@ -1,0 +1,20 @@
+Submission ID,Common Name,Scientific Name,Taxonomic Order,Count,State/Province,County,Location ID,Location,Latitude,Longitude,Date,Time,Protocol,Duration (Min),All Obs Reported,Distance Traveled (km),Area Covered (ha),Number of Observers,Breeding Code,Observation Details,Checklist Comments,ML Catalog Numbers
+S1,Common Myna,Acridotheres tristis,2521,2,SG-,,L1,"Gardens by the Bay, Singapore",1.28,103.86,2023-01-10,08:00 AM,eBird - Traveling Count,30,1,.5,,1,,,,
+S1,Spotted Dove,Spilopelia chinensis,2088,3,SG-,,L1,"Gardens by the Bay, Singapore",1.28,103.86,2023-01-10,08:00 AM,eBird - Traveling Count,30,1,.5,,1,,,,100000001
+S1,Red Junglefowl,Gallus gallus,1642,2,SG-,,L1,"Gardens by the Bay, Singapore",1.28,103.86,2023-01-10,08:00 AM,eBird - Traveling Count,30,1,.5,,1,,,,
+S2,Asian Koel,Eudynamys scolopaceus,2350,1,SG-,,L2,Bishan-Ang Mo Kio Park,1.36,103.84,2023-02-10,07:30 AM,eBird - Stationary Count,45,1,,,1,,,,100000002
+S2,Common Myna,Acridotheres tristis,2521,5,SG-,,L2,Bishan-Ang Mo Kio Park,1.36,103.84,2023-02-10,07:30 AM,eBird - Stationary Count,45,1,,,1,,,,
+S3,White-bellied Sea-Eagle,Haliaeetus leucogaster,905,1,SG-,,L3,Southern Ridges,1.28,103.80,2024-03-01,08:00 AM,eBird - Traveling Count,60,1,2.,,1,,,,
+S3,Collared Kingfisher,Todiramptus coromendus,2960,2,SG-,,L3,Southern Ridges,1.28,103.80,2024-03-01,08:00 AM,eBird - Traveling Count,60,1,2.,,1,,,,100000003
+S4,Rufous Turtle Dove,Streptopelia orientalis,2046,4,BT-42,,L4,Paro - Prodsala,27.5,89.4,2024-04-05,07:00 AM,eBird - Traveling Count,90,1,2.,,2,,,,
+S5,Satyr Tragopan,Tragopan satyra,1269,1,BT-42,,L4,Paro - Prodsala,27.5,89.4,2024-04-05,07:00 AM,eBird - Traveling Count,90,1,2.,,2,,,,100000004
+S6,Barred Cuckoo-Dove,Macropygia unchall,2102,1,BT-42,,L5,Paro - Kyichu,27.4,89.4,2024-04-05,09:00 AM,eBird - Traveling Count,60,1,1.,,2,,,,
+S7,Blood Pheasant,Ithaginis cruentus,1253,1,BT-42,,L5,Paro - Kyichu,27.4,89.4,2024-04-06,07:00 AM,eBird - Traveling Count,90,1,2.,,2,,,,100000005
+S8,Hill Partridge,Arborophila torqueola,1207,2,BT-42,,L5,Paro - Kyichu,27.4,89.4,2024-04-06,07:00 AM,eBird - Traveling Count,90,1,2.,,2,,,,
+S9,Kalij Pheasant,Lophura leucomelanos,1551,3,BT-42,,L6,Thimphu - Motithang,27.4,89.6,2024-04-06,09:00 AM,eBird - Traveling Count,60,1,1.,,2,,,,
+S10,Indian Peafowl,Pavo cristatus,1595,1,BT-42,,L6,Thimphu - Motithang,27.4,89.6,2024-04-07,07:00 AM,eBird - Traveling Count,90,1,2.,,2,,,,
+S11,Spotted Dove,Spilopelia chinensis,2088,2,BT-42,,L6,Thimphu - Motithang,27.4,89.6,2024-04-07,07:00 AM,eBird - Traveling Count,90,1,2.,,2,,,,
+S12,Feral Pigeon,Columba livia (Feral Pigeon),1890,20,BT-42,,L7,Thimphu - National Memorial,27.5,89.6,2024-04-07,09:00 AM,eBird - Traveling Count,45,1,.5,,2,,,,
+S13,Asian Koel,Eudynamys scolopaceus,2350,1,BT-42,,L7,Thimphu - National Memorial,27.5,89.6,2024-04-07,09:00 AM,eBird - Traveling Count,45,1,.5,,2,,,,100000006
+S14,Eastern Spot-billed Duck,Anas zonorhyncha,552,2,MY-10,,L8,KL - KLCC Park,3.15,101.71,2024-08-01,08:00 AM,eBird - Casual Observation,,0,,,1,,,,
+S15,Imaginary Bird,Imagina impossibilis,9999,1,SG-,,L2,Bishan-Ang Mo Kio Park,1.36,103.84,not-a-date,,eBird - Casual Observation,,0,,,1,,,,
