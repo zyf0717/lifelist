@@ -14,18 +14,14 @@ export function makeFigure(d, startYear, opts = {}) {
   const title = `Life list vs documented species — ${d.nChecklists} checklists (${fmtMonthYear(start)} – ${fmtMonthYear(end)})`;
 
   const shapes = [], annotations = [];
-  let prevMid = 0, prevTier = 0;
   d.trips.forEach((t) => {
-    const midMs = (Date.parse(t.start) + Date.parse(t.end)) / 2;
-    // Export: trips closer than ~100 days alternate vertical tiers so rotated
-    // labels never overlap; sparse trips always sit at the top tier.
-    const tier = ex && prevMid && midMs - prevMid < 100 * 864e5 ? 1 - prevTier : 0;
-    prevMid = midMs; prevTier = tier;
-    const mid = new Date(midMs).toISOString().slice(0, 10);
+    const mid = new Date((Date.parse(t.start) + Date.parse(t.end)) / 2).toISOString().slice(0, 10);
     shapes.push({ type: "line", xref: "x", yref: "paper", x0: mid, x1: mid, y0: 0, y1: 1,
       line: { color: TRIP, width: 1 }, opacity: 0.45 });
+    // Export: all labels top-aligned at the plot edge; label-on-label overlap
+    // is accepted (owner call 2026-11-06), the title band stays clear.
     annotations.push({ text: t.region, xref: "x", yref: "paper", x: mid,
-      y: ex ? 1 - tier * 0.12 : 1.10, // export: labels hang inside the plot headroom, clear of the title
+      y: ex ? 1 : 1.10,
       textangle: -90, xanchor: "center", yanchor: "top", showarrow: false,
       font: { size: 9 * s * k, color: TRIP } });
   });
