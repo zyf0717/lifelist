@@ -3,7 +3,6 @@ import { makeFigure } from "./chart.js";
 
 const hint = document.getElementById("hint");
 const dropzone = document.getElementById("dropzone");
-const statusEl = document.getElementById("status");
 const errorEl = document.getElementById("error");
 const yearSel = document.getElementById("start-year");
 const yearWrap = document.getElementById("year-wrap");
@@ -56,7 +55,6 @@ function handleText(text) {
 function rebuild() {
   if (!rows) return;
   data = buildSeries(rows, { homeCode: homeSel.value });
-  statusEl.textContent = `${data.nSpecies} species · ${data.nChecklists} checklists`;
   render();
 }
 
