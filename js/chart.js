@@ -21,10 +21,12 @@ export function makeFigure(d, startYear) {
   });
 
   const data = [
+    { x: d.lifeList.x, y: d.lifeList.x.map(() => 0), type: "scatter", mode: "lines",
+      line: { width: 0 }, showlegend: false, hoverinfo: "skip" },
     { x: d.lifeList.x, y: d.lifeList.y, type: "scatter", mode: "lines",
       name: `Life list (${d.nSpecies} species)`,
       line: { color: LINE, width: 2, shape: "hv" },
-      fill: "tozerx", fillcolor: "rgba(95,180,217,0.22)" },
+      fill: "tonexty", fillcolor: "rgb(29,42,50)" },
     { x: d.withMedia.x, y: d.withMedia.y, type: "scatter", mode: "lines",
       name: `With media (${d.nWithMedia} species)`,
       line: { color: MEDIA, width: 2, dash: "dash", shape: "hv" } },
@@ -37,7 +39,7 @@ export function makeFigure(d, startYear) {
     xaxis: { range: [start, end], gridcolor: "#3a3f46", linecolor: "#3a3f46", dtick: "M12" },
     yaxis: { title: { text: "Species on life list" }, gridcolor: "#242930", zerolinecolor: "#3a3f46", linecolor: "#3a3f46",
       range: [0, Math.ceil((d.nSpecies * 1.12) / 50) * 50] },
-    legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
+    legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)", traceorder: "normal" },
     hovermode: "x unified",
     shapes, annotations,
   };

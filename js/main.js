@@ -12,7 +12,7 @@ let data = null;
 function render() {
   if (!data) return;
   if (typeof Plotly === "undefined") {
-    errorEl.textContent = "Plotly failed to load (ad blocker?); it is now served from this site, try a hard reload (Ctrl/Cmd+Shift+R).";
+    errorEl.textContent = "Chart library failed to load — try a hard reload (Ctrl/Cmd+Shift+R).";
     return;
   }
   try {
