@@ -58,6 +58,15 @@ export function countryCounts(rows) {
     .sort((a, b) => b.checklists - a.checklists || a.name.localeCompare(b.name));
 }
 
+// Dedupe unit: one "taxon" = one normalized Scientific Name (fallback: Common
+// Name). This is a name-based tally, NOT eBird's official countable-species
+// total — subspecies, hybrids, and unidentified taxa are counted by name,
+// not by eBird's taxonomy and countability rules.
+export function taxonKey(row) {
+  const sci = String(row["Scientific Name"] ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+  return sci || String(row["Common Name"] ?? "").trim().toLowerCase();
+}
+
 const DAY = 86400000;
 const isoDay = (ms) => new Date(ms).toISOString().slice(0, 10);
 
@@ -68,7 +77,7 @@ export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDa
     if (Number.isNaN(d) || !r["Common Name"]) continue;
     obs.push({
       date: d,
-      species: r["Common Name"],
+      taxon: taxonKey(r),
       submission: r["Submission ID"],
       media: String(r["ML Catalog Numbers"] ?? "").trim() !== "",
       sp: r["State/Province"],
@@ -80,8 +89,8 @@ export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDa
   const submissions = new Set();
   for (const o of obs) {
     submissions.add(o.submission);
-    if (!firstSeen.has(o.species) || o.date < firstSeen.get(o.species)) firstSeen.set(o.species, o.date);
-    if (o.media && (!firstMedia.has(o.species) || o.date < firstMedia.get(o.species))) firstMedia.set(o.species, o.date);
+    if (!firstSeen.has(o.taxon) || o.date < firstSeen.get(o.taxon)) firstSeen.set(o.taxon, o.date);
+    if (o.media && (!firstMedia.has(o.taxon) || o.date < firstMedia.get(o.taxon))) firstMedia.set(o.taxon, o.date);
   }
   const toCurve = (map) => {
     const sorted = [...map.entries()].sort((a, b) => a[1] - b[1]);
@@ -119,7 +128,7 @@ export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDa
   const dates = obs.map(o => o.date);
   return {
     lifeList, withMedia, trips,
-    nSpecies: lifeList.y.length,
+    nTaxa: lifeList.y.length,
     nWithMedia: withMedia.y.length,
     nChecklists: submissions.size,
     minDate: Math.min(...dates),

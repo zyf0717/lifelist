@@ -33,8 +33,8 @@ test("dropping a CSV renders two traces plus trip annotations", async () => {
   assert.equal(els["start-year"].value, "2023"); // defaults to first year in the data
   assert.equal(rendered.data.length, 3);
   assert.equal(rendered.data[1].fill, "tonexty");
-  assert.match(rendered.data[1].name, /^Life list \(\d+ species\)$/);
-  assert.match(rendered.data[2].name, /^With media \(\d+ species\)$/);
+  assert.match(rendered.data[1].name, /^Life list \(\d+ taxa\)$/);
+  assert.match(rendered.data[2].name, /^With media \(\d+ taxa\)$/);
   assert.ok(rendered.layout.annotations.some((a) => a.text === "Bhutan"));
   assert.match(rendered.layout.title.text, /checklists/);
 });

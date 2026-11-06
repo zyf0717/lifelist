@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { parseCsv, buildSeries, regionOf, countryCounts } from "../js/lifelist.js";
+import { parseCsv, buildSeries, regionOf, countryCounts, taxonKey } from "../js/lifelist.js";
 
 const sample = readFileSync(fileURLToPath(new URL("../sample.csv", import.meta.url)), "utf8");
 
@@ -14,11 +14,46 @@ test("parseCsv handles quoted commas, escaped quotes, CRLF", () => {
   assert.equal(rows[1].b, "2");
 });
 
-test("buildSeries dedupes species and counts cumulatively", () => {
+test("buildSeries dedupes taxa and counts cumulatively", () => {
   const d = buildSeries(parseCsv(sample));
-  assert.ok(d.nSpecies > 0);
-  assert.deepEqual(d.lifeList.y, [...Array(d.nSpecies).keys()].map((i) => i + 1));
-  assert.ok(d.nWithMedia <= d.nSpecies);
+  assert.ok(d.nTaxa > 0);
+  assert.deepEqual(d.lifeList.y, [...Array(d.nTaxa).keys()].map((i) => i + 1));
+  assert.ok(d.nWithMedia <= d.nTaxa);
+});
+
+test("H1: dedupe unit is the scientific name, not the common name", () => {
+  const rows = parseCsv(sample);
+  const d = buildSeries(rows);
+  // Reference total: distinct normalized scientific names among valid rows.
+  const ref = new Set(rows
+    .filter((r) => !Number.isNaN(Date.parse(r.Date)) && r["Common Name"])
+    .map(taxonKey));
+  assert.equal(d.nTaxa, ref.size);
+  assert.equal(d.nTaxa, 22); // sample.csv reference export total
+  // Same taxon renamed in eBird (new common name, same scientific name) dedupes.
+  const renamed = [
+    { "Common Name": "Old Name", "Scientific Name": "Turdus migratorius", Date: "2023-01-01", "Submission ID": "s1", "State/Province": "SG-" },
+    { "Common Name": "American Robin (rev.)", "Scientific Name": "Turdus migratorius", Date: "2024-01-01", "Submission ID": "s2", "State/Province": "SG-" },
+  ];
+  assert.equal(buildSeries(renamed).nTaxa, 1);
+  // Distinct taxa sharing one common name stay distinct.
+  const shared = [
+    { "Common Name": "Common Sandpiper", "Scientific Name": "Actitis hypoleucos", Date: "2023-01-01", "Submission ID": "s1", "State/Province": "SG-" },
+    { "Common Name": "Common Sandpiper", "Scientific Name": "Actitis macularius", Date: "2023-01-02", "Submission ID": "s2", "State/Province": "SG-" },
+  ];
+  assert.equal(buildSeries(shared).nTaxa, 2);
+  // Whitespace/case variants of the same scientific name normalize together.
+  const messy = [
+    { "Common Name": "A", "Scientific Name": "  egretta  GARZETTA ", Date: "2023-01-01", "Submission ID": "s1", "State/Province": "SG-" },
+    { "Common Name": "B", "Scientific Name": "Egretta garzetta", Date: "2023-01-02", "Submission ID": "s2", "State/Province": "SG-" },
+  ];
+  assert.equal(buildSeries(messy).nTaxa, 1);
+  // Fallback to Common Name when Scientific Name is absent.
+  const fallback = [
+    { "Common Name": "Mystery sp.", "Scientific Name": "", Date: "2023-01-01", "Submission ID": "s1", "State/Province": "SG-" },
+    { "Common Name": "Mystery sp.", "Scientific Name": "", Date: "2023-01-02", "Submission ID": "s2", "State/Province": "SG-" },
+  ];
+  assert.equal(buildSeries(fallback).nTaxa, 1);
 });
 
 test("media boolean uses the first date the species had media", () => {
@@ -36,7 +71,7 @@ test("rows with invalid dates are ignored", () => {
     { "Common Name": "X", Date: "nope", "Submission ID": "s1", "State/Province": "SG-", "ML Catalog Numbers": "" },
     { "Common Name": "Y", Date: "2023-01-01", "Submission ID": "s2", "State/Province": "SG-", "ML Catalog Numbers": "" },
   ];
-  assert.equal(buildSeries(rows).nSpecies, 1);
+  assert.equal(buildSeries(rows).nTaxa, 1);
 });
 
 test("trip clustering: gap splits, min rows filters, SG excluded, CN-46 is Hainan", () => {

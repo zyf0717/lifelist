@@ -11,7 +11,7 @@ export function makeFigure(d, startYear, opts = {}) {
   const s = ex ? 2 : 1; // export type is 2x larger relative to the image
   const start = `${startYear}-01-01`;
   const end = new Date(d.maxDate + 20 * 86400000).toISOString().slice(0, 10);
-  const title = `Life list vs documented species — ${d.nChecklists} checklists (${fmtMonthYear(start)} – ${fmtMonthYear(end)})`;
+  const title = `Life list vs taxa with media — ${d.nChecklists} checklists (${fmtMonthYear(start)} – ${fmtMonthYear(end)})`;
 
   const shapes = [], annotations = [];
   // Trip labels sit at 45° up-right from the top of their vertical line,
@@ -37,11 +37,11 @@ export function makeFigure(d, startYear, opts = {}) {
     { x: d.lifeList.x, y: d.lifeList.x.map(() => 0), type: "scatter", mode: "lines",
       line: { width: 0 }, showlegend: false, hoverinfo: "skip" },
     { x: d.lifeList.x, y: d.lifeList.y, type: "scatter", mode: "lines",
-      name: `Life list (${d.nSpecies} species)`,
+      name: `Life list (${d.nTaxa} taxa)`,
       line: { color: LINE, width: 2, shape: "hv" },
       fill: "tonexty", fillcolor: "rgb(29,42,50)" },
     { x: d.withMedia.x, y: d.withMedia.y, type: "scatter", mode: "lines",
-      name: `With media (${d.nWithMedia} species)`,
+      name: `With media (${d.nWithMedia} taxa)`,
       line: { color: MEDIA, width: 2, shape: "hv" } },
   ];
 
@@ -56,8 +56,8 @@ export function makeFigure(d, startYear, opts = {}) {
       ? { t: 45 * k + maxRise, r: 15 * k + maxRun, b: 55 * k, l: 85 * k }
       : { t: 150, r: 20, b: 50, l: 60 },
     xaxis: { range: [start, end], showgrid: false, linecolor: "#3a3f46", dtick: "M12" },
-    yaxis: { title: { text: "Species on life list" }, gridcolor: "#242930", zerolinecolor: "#3a3f46", linecolor: "#3a3f46",
-      range: [0, Math.ceil((d.nSpecies * 1.12) / 50) * 50] },
+    yaxis: { title: { text: "Recorded taxa on life list" }, gridcolor: "#242930", zerolinecolor: "#3a3f46", linecolor: "#3a3f46",
+      range: [0, Math.ceil((d.nTaxa * 1.12) / 50) * 50] },
     legend: ex
       ? { x: 0.99, y: 0.02, xanchor: "right", yanchor: "bottom", bgcolor: "rgba(0,0,0,0)", traceorder: "normal" }
       : { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)", traceorder: "normal" },
