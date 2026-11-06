@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { parseCsv, buildSeries, regionOf } from "../js/lifelist.js";
+import { parseCsv, buildSeries, regionOf, countryCounts } from "../js/lifelist.js";
 
 const sample = readFileSync(fileURLToPath(new URL("../sample.csv", import.meta.url)), "utf8");
 
@@ -62,6 +62,31 @@ test("regionOf maps country codes and province overrides", () => {
   assert.equal(regionOf("CN-46"), "Hainan");
   assert.equal(regionOf("CN-61"), "China");
   assert.equal(regionOf("XX-99"), "XX");
+});
+
+test("home country is configurable: BT home makes Singapore the trip", () => {
+  const rows = [];
+  const mk = (sp, day, sub) => rows.push({
+    "Common Name": "C", Date: `2024-04-${String(day).padStart(2, "0")}`, "Submission ID": sub, "State/Province": sp, "ML Catalog Numbers": "",
+  });
+  for (let i = 0; i < 12; i++) mk("BT-42", (i % 3) + 5, `b${i}`);
+  for (let i = 0; i < 12; i++) mk("SG-", (i % 3) + 5, `g${i}`);
+  const d = buildSeries(rows, { homeCode: "BT" });
+  assert.ok(d.trips.some((t) => t.region === "Singapore"));
+  assert.ok(!d.trips.some((t) => t.region === "Bhutan"));
+});
+
+test("countryCounts ranks by checklist count", () => {
+  const rows = [];
+  const mk = (sp, sub) => rows.push({
+    "Common Name": "C", Date: "2024-01-01", "Submission ID": sub, "State/Province": sp, "ML Catalog Numbers": "",
+  });
+  for (let i = 0; i < 3; i++) mk("SG-", `g${i}`);
+  for (let i = 0; i < 5; i++) mk("JP-", `j${i}`);
+  const counts = countryCounts(rows);
+  assert.equal(counts[0].code, "JP");
+  assert.equal(counts[0].checklists, 5);
+  assert.equal(counts[1].code, "SG");
 });
 
 test("sample fixture produces a chartable dataset", () => {

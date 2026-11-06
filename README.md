@@ -11,8 +11,10 @@ Live: https://zyf0717.github.io/lifelist · Demo with sample data: add `?demo` t
 - **Life list** — cumulative species, each counted at its first-sighting date.
 - **With media** — cumulative species that have at least one Macaulay Library item attached,
   counted at the date the media was first uploaded.
-- **Trip labels** — non-Singapore checklists clustered by ≤7-day gaps; trips with ≥10 rows get a
-  marker. Start year defaults to 2023 and is adjustable.
+- **Trip labels** — checklists outside your home country clustered by ≤7-day gaps; trips with ≥10 rows
+  get a marker. Default country is selectable (from the countries in your file) and defaults to your
+  most-visited country. Start year is a dropdown of the years present in the data, defaulting to the
+  first year. Both selectors appear only after the file parses.
 
 ## Development
 

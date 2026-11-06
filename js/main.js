@@ -1,39 +1,67 @@
-import { parseCsv, buildSeries } from "./lifelist.js";
+import { parseCsv, buildSeries, countryCounts } from "./lifelist.js";
 import { makeFigure } from "./chart.js";
 
-const DEFAULT_START_YEAR = 2023;
 const hint = document.getElementById("hint");
 const dropzone = document.getElementById("dropzone");
-const statusEl = document.getElementById("status");
 const errorEl = document.getElementById("error");
-const yearInput = document.getElementById("start-year");
+const yearSel = document.getElementById("start-year");
+const yearWrap = document.getElementById("year-wrap");
+const homeSel = document.getElementById("home-country");
+const homeWrap = document.getElementById("home-wrap");
+let rows = null;
 let data = null;
 
 function render() {
   if (!data) return;
-  const f = makeFigure(data, +yearInput.value);
-  Plotly.react("chart", f.data, f.layout, { responsive: true });
+  if (typeof Plotly === "undefined") {
+    errorEl.textContent = "Chart library failed to load — try a hard reload (Ctrl/Cmd+Shift+R).";
+    return;
+  }
+  try {
+    const f = makeFigure(data, +yearSel.value);
+    Plotly.react("chart", f.data, f.layout, { responsive: true });
+    errorEl.textContent = "";
+  } catch (e) {
+    errorEl.textContent = `Render error: ${e.message}`;
+  }
 }
 
 function handleText(text) {
   errorEl.textContent = "";
-  const rows = parseCsv(text);
-  if (!rows.length || !("Common Name" in rows[0]) || !("Date" in rows[0])) {
+  if (text.startsWith("PK")) {
+    errorEl.textContent = "That's a ZIP archive — My eBird zips the download. Unzip it and drop the CSV inside.";
+    return;
+  }
+  const parsed = parseCsv(text);
+  if (!parsed.length || !("Common Name" in parsed[0]) || !("Date" in parsed[0])) {
     errorEl.textContent = "That doesn't look like a My eBird export (missing Common Name / Date columns).";
     return;
   }
-  data = buildSeries(rows);
-  const minYear = new Date(data.minDate).getUTCFullYear();
-  yearInput.min = minYear;
-  yearInput.value = Math.max(DEFAULT_START_YEAR, minYear);
+  rows = parsed;
+  const years = [...new Set(rows.map((r) => String(r.Date).slice(0, 4)))].filter((y) => /^\d{4}$/.test(y)).sort();
+  yearSel.innerHTML = years.map((y) => `<option>${y}</option>`).join("");
+  yearSel.value = years[0];
+  yearWrap.style.display = "";
+  homeWrap.style.display = "";
+  const counts = countryCounts(rows);
+  homeSel.innerHTML = counts
+    .map((c) => `<option value="${c.code}">${c.name} (${c.checklists})</option>`)
+    .join("");
+  homeSel.value = counts.length ? counts[0].code : "SG";
+  rebuild();
   hint.style.display = "none";
-  statusEl.textContent = `${data.nSpecies} species · ${data.nChecklists} checklists`;
+}
+
+function rebuild() {
+  if (!rows) return;
+  data = buildSeries(rows, { homeCode: homeSel.value });
   render();
 }
 
 const handleFile = (file) => file.text().then(handleText);
 
-yearInput.addEventListener("input", render);
+yearSel.addEventListener("change", render);
+homeSel.addEventListener("change", rebuild);
 document.getElementById("file").addEventListener("change", (e) => e.target.files[0] && handleFile(e.target.files[0]));
 
 const showDrop = (on) => dropzone.classList.toggle("over", on);

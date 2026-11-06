@@ -5,7 +5,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const handlers = {};
-const el = (id) => ({
+const els = {};
+const el = (id) => (els[id] ??= {
   id, style: {}, textContent: "", value: "2023", min: "",
   addEventListener() {}, classList: { toggle() {} },
 });
@@ -25,9 +26,23 @@ test("dropping a CSV renders two traces plus trip annotations", async () => {
   });
   await new Promise((r) => setImmediate(r));
   assert.ok(rendered, "Plotly.react was not called");
-  assert.equal(rendered.data.length, 2);
-  assert.match(rendered.data[0].name, /^Life list \(\d+ species\)$/);
-  assert.match(rendered.data[1].name, /^With media \(\d+ species\)$/);
+  assert.equal(els["home-country"].value, "SG"); // sample.csv is mostly Singapore checklists
+  assert.equal(els["year-wrap"].style.display, ""); // start-year appears after parse
+  assert.match(els["start-year"].innerHTML, /<option>2023<\/option>/);
+  assert.equal(els["start-year"].value, "2023"); // defaults to first year in the data
+  assert.equal(rendered.data.length, 3);
+  assert.equal(rendered.data[1].fill, "tonexty");
+  assert.match(rendered.data[1].name, /^Life list \(\d+ species\)$/);
+  assert.match(rendered.data[2].name, /^With media \(\d+ species\)$/);
   assert.ok(rendered.layout.annotations.some((a) => a.text === "Bhutan"));
   assert.match(rendered.layout.title.text, /checklists/);
+});
+
+test("a ZIP file gets a helpful error instead of silence", async () => {
+  handlers.drop({
+    preventDefault() {},
+    dataTransfer: { files: [{ text: async () => "PK\u0003\u0004garbage" }] },
+  });
+  await new Promise((r) => setImmediate(r));
+  assert.match(els.error.textContent, /ZIP/);
 });
