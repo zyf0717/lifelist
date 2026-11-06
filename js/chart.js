@@ -15,7 +15,7 @@ export function makeFigure(d, startYear) {
     const mid = new Date((Date.parse(t.start) + Date.parse(t.end)) / 2).toISOString().slice(0, 10);
     shapes.push({ type: "line", xref: "x", yref: "paper", x0: mid, x1: mid, y0: 0, y1: 1,
       line: { color: TRIP, width: 1 }, opacity: 0.45 });
-    annotations.push({ text: t.region, xref: "x", yref: "paper", x: mid, y: 1.01,
+    annotations.push({ text: t.region, xref: "x", yref: "paper", x: mid, y: 1.045,
       textangle: 90, xanchor: "right", showarrow: false,
       font: { size: 9, color: TRIP }, yshift: 4 + (i % 2) * 13 });
   });
@@ -33,9 +33,10 @@ export function makeFigure(d, startYear) {
   const layout = {
     paper_bgcolor: BG, plot_bgcolor: BG, font: { color: FG },
     title: { text: title, font: { size: 15 } },
-    margin: { t: 120, r: 20, b: 50, l: 60 },
+    margin: { t: 150, r: 20, b: 50, l: 60 },
     xaxis: { range: [start, end], gridcolor: "#3a3f46", linecolor: "#3a3f46", dtick: "M12" },
-    yaxis: { title: { text: "Species on life list" }, gridcolor: "#3a3f46", linecolor: "#3a3f46" },
+    yaxis: { title: { text: "Species on life list" }, gridcolor: "#3a3f46", linecolor: "#3a3f46",
+      range: [0, Math.ceil((d.nSpecies * 1.12) / 50) * 50] },
     legend: { x: 0.01, y: 0.99, bgcolor: "rgba(0,0,0,0)" },
     hovermode: "x unified",
     shapes, annotations,
