@@ -39,6 +39,17 @@ test("dropping a CSV renders two traces plus trip annotations", async () => {
   assert.match(rendered.layout.title.text, /checklists/);
 });
 
+test("a CSV with no valid observation dates shows a message instead of an empty chart", async () => {
+  rendered = null;
+  handlers.drop({
+    preventDefault() {},
+    dataTransfer: { files: [{ text: async () => 'Submission ID,Common Name,Scientific Name,Date,State/Province,ML Catalog Numbers\ns1,X,Turdus migratorius,nope,SG-,\n' }] },
+  });
+  await new Promise((r) => setImmediate(r));
+  assert.equal(rendered, null, "Plotly.react must not be called with no valid observations");
+  assert.match(els.error.textContent, /No dated observations/);
+});
+
 test("a ZIP file gets a helpful error instead of silence", async () => {
   handlers.drop({
     preventDefault() {},

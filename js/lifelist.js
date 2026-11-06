@@ -72,9 +72,12 @@ const isoDay = (ms) => new Date(ms).toISOString().slice(0, 10);
 
 export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDays = 7 } = {}) {
   const obs = [];
+  let minDate = Infinity, maxDate = -Infinity; // tracked incrementally: spread on 100k+ arrays throws RangeError
   for (const r of rows) {
     const d = Date.parse(r["Date"]);
     if (Number.isNaN(d) || !r["Common Name"]) continue;
+    if (d < minDate) minDate = d;
+    if (d > maxDate) maxDate = d;
     obs.push({
       date: d,
       taxon: taxonKey(r),
@@ -125,13 +128,12 @@ export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDa
   }
   trips.sort((a, b) => (a.start < b.start ? -1 : 1));
 
-  const dates = obs.map(o => o.date);
   return {
     lifeList, withMedia, trips,
     nTaxa: lifeList.y.length,
     nWithMedia: withMedia.y.length,
     nChecklists: submissions.size,
-    minDate: Math.min(...dates),
-    maxDate: Math.max(...dates),
+    minDate: Number.isFinite(minDate) ? minDate : null,
+    maxDate: Number.isFinite(maxDate) ? maxDate : null,
   };
 }

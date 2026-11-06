@@ -74,6 +74,29 @@ test("rows with invalid dates are ignored", () => {
   assert.equal(buildSeries(rows).nTaxa, 1);
 });
 
+test("H2: extrema are tracked incrementally, no array spread", () => {
+  // 150k observations: Math.min(...dates) would throw RangeError.
+  const rows = [];
+  for (let i = 0; i < 150000; i++) {
+    const day = new Date(Date.UTC(2000, 0, 1) + i * 86400000).toISOString().slice(0, 10);
+    rows.push({ "Common Name": `S${i}`, "Scientific Name": `Sci s${i}`, Date: day, "Submission ID": `sub${i}`, "State/Province": "SG-", "ML Catalog Numbers": "" });
+  }
+  const d = buildSeries(rows);
+  assert.equal(d.nTaxa, 150000);
+  assert.equal(d.minDate, Date.UTC(2000, 0, 1));
+  assert.equal(d.maxDate, Date.UTC(2000, 0, 1) + 149999 * 86400000);
+  // Single observation: min === max.
+  const one = buildSeries([rows[0]]);
+  assert.equal(one.minDate, one.maxDate);
+  assert.equal(one.nTaxa, 1);
+  // No valid observations: explicit nulls.
+  const none = buildSeries([{ "Common Name": "X", Date: "not a date", "Submission ID": "s1", "State/Province": "SG-" }]);
+  assert.equal(none.minDate, null);
+  assert.equal(none.maxDate, null);
+  assert.equal(none.nTaxa, 0);
+  assert.equal(buildSeries([]).minDate, null);
+});
+
 test("trip clustering: gap splits, min rows filters, SG excluded, CN-46 is Hainan", () => {
   const rows = [];
   const mk = (sp, date, sub) => rows.push({
