@@ -114,6 +114,42 @@ test("H2: extrema are tracked incrementally, no array spread", () => {
   assert.equal(buildSeries([]).minDate, null);
 });
 
+test("M2: later start year keeps the cumulative baseline as a synthetic step point", () => {
+  const mk = (sci, date, media = "") => ({
+    "Common Name": sci, "Scientific Name": sci, Date: date,
+    "Submission ID": `sub-${sci}-${date}`, "State/Province": "SG-", "ML Catalog Numbers": media,
+  });
+  const rows = [mk("A a", "2020-05-01", "111"), mk("B b", "2021-07-01")];
+  const d = buildSeries(rows);
+
+  // Selected year after all observations: one synthetic point at the full total.
+  const late = makeFigure(d, 2025);
+  assert.deepEqual(late.data[1].x, ["2025-01-01"]);
+  assert.deepEqual(late.data[1].y, [2]);
+  assert.deepEqual(late.data[2].x, ["2025-01-01"]);
+  assert.deepEqual(late.data[2].y, [1]); // media taxon A was recorded before 2025
+
+  // Year between sightings: baseline point then the on/after points.
+  const mid = makeFigure(d, 2021);
+  assert.deepEqual(mid.data[1].x, ["2021-01-01", "2021-07-01"]);
+  assert.deepEqual(mid.data[1].y, [1, 2]);
+  assert.deepEqual(mid.data[2].x, ["2021-01-01"]);
+  assert.deepEqual(mid.data[2].y, [1]);
+
+  // Sighting exactly on January 1: it is an on/after point, not double-counted.
+  const jan1 = buildSeries([mk("A a", "2021-01-01"), mk("B b", "2022-03-01")]);
+  const f = makeFigure(jan1, 2021);
+  assert.deepEqual(f.data[1].x, ["2021-01-01", "2022-03-01"]);
+  assert.deepEqual(f.data[1].y, [1, 2]);
+
+  // Step shape kept; baseline fill follows the displayed life-list x.
+  assert.equal(mid.data[1].line.shape, "hv");
+  assert.equal(mid.data[2].line.shape, "hv");
+  assert.deepEqual(mid.data[0].x, mid.data[1].x);
+  // buildSeries totals are untouched by the display filter.
+  assert.equal(d.nTaxa, 2);
+});
+
 test("trip clustering: gap splits, min rows filters, SG excluded, CN-46 is Hainan", () => {
   const rows = [];
   const mk = (sp, date, sub) => rows.push({

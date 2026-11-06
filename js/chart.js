@@ -33,14 +33,28 @@ export function makeFigure(d, startYear, opts = {}) {
       font: { size: tripFont, color: TRIP } });
   });
 
+  // Preserve the cumulative baseline when the start year skips early
+  // sightings: prepend a synthetic step point at the start date with y equal
+  // to the number of taxa first recorded before it, then keep points on or
+  // after it. buildSeries() totals are untouched; shape "hv" renders the step.
+  const display = (series) => {
+    const before = series.x.reduce((n, x) => n + (x < start ? 1 : 0), 0);
+    const x = [], y = [];
+    if (before > 0) { x.push(start); y.push(before); }
+    series.x.forEach((d, i) => { if (d >= start) { x.push(d); y.push(series.y[i]); } });
+    return { x, y };
+  };
+  const life = display(d.lifeList);
+  const media = display(d.withMedia);
+
   const data = [
-    { x: d.lifeList.x, y: d.lifeList.x.map(() => 0), type: "scatter", mode: "lines",
+    { x: life.x, y: life.x.map(() => 0), type: "scatter", mode: "lines",
       line: { width: 0 }, showlegend: false, hoverinfo: "skip" },
-    { x: d.lifeList.x, y: d.lifeList.y, type: "scatter", mode: "lines",
+    { x: life.x, y: life.y, type: "scatter", mode: "lines",
       name: `Life list (${d.nTaxa} taxa)`,
       line: { color: LINE, width: 2, shape: "hv" },
       fill: "tonexty", fillcolor: "rgb(29,42,50)" },
-    { x: d.withMedia.x, y: d.withMedia.y, type: "scatter", mode: "lines",
+    { x: media.x, y: media.y, type: "scatter", mode: "lines",
       name: `Taxa with media (${d.nWithMedia}) — by observation date`,
       line: { color: MEDIA, width: 2, shape: "hv" } },
   ];
