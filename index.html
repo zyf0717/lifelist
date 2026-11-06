@@ -14,11 +14,19 @@
   .controls { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; margin: 8px 0; }
   .controls .row { display: flex; gap: 12px; align-items: center; }
   label { display: flex; gap: 8px; align-items: center; }
-  input[type=number], select { background: #1e232a; color: #d6d9de; border: 1px solid #3a3f46; border-radius: 4px; padding: 4px; }
+  input[type=number], select, button { background: #1e232a; color: #d6d9de; border: 1px solid #3a3f46; border-radius: 4px; padding: 4px; }
+  button { padding: 4px 12px; cursor: pointer; }
+  button:hover { border-color: #5fb4d9; }
   #chart { width: 100%; height: 560px; }
   #dropzone { position: fixed; inset: 0; display: none; place-items: center;
     background: rgba(20,23,28,.92); border: 3px dashed #5fb4d9; z-index: 10; font-size: 22px; }
   #dropzone.over { display: grid; }
+  #save-overlay { position: fixed; inset: 0; background: rgba(20,23,28,.96); display: grid;
+    place-items: center; z-index: 20; padding: 16px; }
+  #save-overlay[hidden] { display: none; }
+  .save-card { display: flex; flex-direction: column; gap: 10px; align-items: center;
+    text-align: center; max-width: 100%; }
+  .save-card img { max-width: min(100%, 900px); border: 1px solid #3a3f46; border-radius: 6px; }
   #hint { border: 2px dashed #3a3f46; border-radius: 8px; padding: 40px; text-align: center; }
   #error { color: #e06c75; min-height: 1.5em; }
   footer { color: #8b93a0; font-size: 12px; margin-top: 12px; }
@@ -31,6 +39,11 @@
   <div class="controls">
     <div class="row">
       <input id="file" type="file" accept=".csv,text/csv">
+      <span id="dl-row" style="display:none">Save
+        <button data-w="1920" data-name="1080p">Full HD</button>
+        <button data-w="2560" data-name="1440p">QHD</button>
+        <button data-w="3840" data-name="2160p">4K</button>
+      </span>
     </div>
     <label id="year-wrap" style="display:none">Start year <select id="start-year"></select></label>
     <label id="home-wrap" style="display:none">Default <select id="home-country"></select></label>
@@ -41,6 +54,13 @@
   <footer>Data is parsed locally in this browser. Add <code>?demo</code> to the URL for sample data. Source: <a href="https://github.com/zyf0717/lifelist">github.com/zyf0717/lifelist</a></footer>
 </main>
 <div id="dropzone">Drop the CSV anywhere</div>
+<div id="save-overlay" hidden>
+  <div class="save-card">
+    <p>Press and hold the image, then choose <strong>Save to Photos</strong> or <strong>Save to Files</strong>.</p>
+    <img id="save-img" alt="Chart export preview">
+    <button id="save-close" type="button">Close</button>
+  </div>
+</div>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>
