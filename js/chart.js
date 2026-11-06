@@ -52,7 +52,7 @@ export function makeFigure(d, startYear, opts = {}) {
     margin: ex
       ? { t: 45 * k + maxRise, r: 15 * k + maxRun, b: 55 * k, l: 85 * k }
       : { t: 150, r: 20, b: 50, l: 60 },
-    xaxis: { range: [start, end], gridcolor: "#3a3f46", linecolor: "#3a3f46", dtick: "M12" },
+    xaxis: { range: [start, end], showgrid: false, linecolor: "#3a3f46", dtick: "M12" },
     yaxis: { title: { text: "Species on life list" }, gridcolor: "#242930", zerolinecolor: "#3a3f46", linecolor: "#3a3f46",
       range: [0, Math.ceil((d.nSpecies * 1.12) / 50) * 50] },
     legend: ex
