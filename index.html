@@ -11,7 +11,8 @@
   body { background: #14171c; color: #d6d9de; font: 14px/1.5 system-ui, sans-serif; margin: 0; }
   main { max-width: 1150px; margin: 0 auto; padding: 16px; }
   h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-  .controls { display: flex; gap: 16px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
+  .controls { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; margin: 8px 0; }
+  .controls .row { display: flex; gap: 12px; align-items: center; }
   label { display: flex; gap: 8px; align-items: center; }
   input[type=number], select { background: #1e232a; color: #d6d9de; border: 1px solid #3a3f46; border-radius: 4px; padding: 4px; }
   #status { color: #8b93a0; }
@@ -29,10 +30,12 @@
 <main>
   <h1>eBird Lifelist</h1>
   <div class="controls">
-    <label>Start year <input id="start-year" type="number" min="1900" max="2100" value="2023"></label>
+    <div class="row">
+      <input id="file" type="file" accept=".csv,text/csv">
+      <span id="status"></span>
+    </div>
+    <label id="year-wrap" style="display:none">Start year <select id="start-year"></select></label>
     <label id="home-wrap" style="display:none">Default <select id="home-country"></select></label>
-    <label>or <input id="file" type="file" accept=".csv,text/csv"></label>
-    <span id="status"></span>
   </div>
   <div id="error"></div>
   <div id="hint">Drag your <code>MyEBirdData.csv</code> here (My eBird → Download my data). Nothing leaves your browser.</div>

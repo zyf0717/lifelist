@@ -12,8 +12,9 @@ Live: https://zyf0717.github.io/lifelist · Demo with sample data: add `?demo` t
 - **With media** — cumulative species that have at least one Macaulay Library item attached,
   counted at the date the media was first uploaded.
 - **Trip labels** — checklists outside your home country clustered by ≤7-day gaps; trips with ≥10 rows
-  get a marker. Home country is selectable and defaults to your most-visited country. Start year
-  defaults to 2023 and is adjustable.
+  get a marker. Default country is selectable (from the countries in your file) and defaults to your
+  most-visited country. Start year is a dropdown of the years present in the data, defaulting to the
+  first year. Both selectors appear only after the file parses.
 
 ## Development
 

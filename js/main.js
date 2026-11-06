@@ -1,12 +1,12 @@
 import { parseCsv, buildSeries, countryCounts } from "./lifelist.js";
 import { makeFigure } from "./chart.js";
 
-const DEFAULT_START_YEAR = 2023;
 const hint = document.getElementById("hint");
 const dropzone = document.getElementById("dropzone");
 const statusEl = document.getElementById("status");
 const errorEl = document.getElementById("error");
-const yearInput = document.getElementById("start-year");
+const yearSel = document.getElementById("start-year");
+const yearWrap = document.getElementById("year-wrap");
 const homeSel = document.getElementById("home-country");
 const homeWrap = document.getElementById("home-wrap");
 let rows = null;
@@ -19,7 +19,7 @@ function render() {
     return;
   }
   try {
-    const f = makeFigure(data, +yearInput.value);
+    const f = makeFigure(data, +yearSel.value);
     Plotly.react("chart", f.data, f.layout, { responsive: true });
     errorEl.textContent = "";
   } catch (e) {
@@ -39,6 +39,10 @@ function handleText(text) {
     return;
   }
   rows = parsed;
+  const years = [...new Set(rows.map((r) => String(r.Date).slice(0, 4)))].filter((y) => /^\d{4}$/.test(y)).sort();
+  yearSel.innerHTML = years.map((y) => `<option>${y}</option>`).join("");
+  yearSel.value = years[0];
+  yearWrap.style.display = "";
   homeWrap.style.display = "";
   const counts = countryCounts(rows);
   homeSel.innerHTML = counts
@@ -46,11 +50,7 @@ function handleText(text) {
     .join("");
   homeSel.value = counts.length ? counts[0].code : "SG";
   rebuild();
-  const minYear = new Date(data.minDate).getUTCFullYear();
-  yearInput.min = minYear;
-  yearInput.value = Math.max(DEFAULT_START_YEAR, minYear);
   hint.style.display = "none";
-  render();
 }
 
 function rebuild() {
@@ -62,7 +62,7 @@ function rebuild() {
 
 const handleFile = (file) => file.text().then(handleText);
 
-yearInput.addEventListener("input", render);
+yearSel.addEventListener("change", render);
 homeSel.addEventListener("change", rebuild);
 document.getElementById("file").addEventListener("change", (e) => e.target.files[0] && handleFile(e.target.files[0]));
 
