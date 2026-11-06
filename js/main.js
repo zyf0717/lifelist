@@ -8,7 +8,7 @@ const yearSel = document.getElementById("start-year");
 const yearWrap = document.getElementById("year-wrap");
 const homeSel = document.getElementById("home-country");
 const homeWrap = document.getElementById("home-wrap");
-const downloadBtn = document.getElementById("download");
+const dlRow = document.getElementById("dl-row");
 let rows = null;
 let data = null;
 
@@ -44,7 +44,7 @@ function handleText(text) {
   yearSel.value = years[0];
   yearWrap.style.display = "";
   homeWrap.style.display = "";
-  downloadBtn.style.display = "";
+  dlRow.style.display = "";
   const counts = countryCounts(rows);
   homeSel.innerHTML = counts
     .map((c) => `<option value="${c.code}">${c.name} (${c.checklists})</option>`)
@@ -63,9 +63,17 @@ function rebuild() {
 const handleFile = (file) => file.text().then(handleText);
 
 yearSel.addEventListener("change", render);
-downloadBtn.addEventListener("click", () => {
-  Plotly.downloadAsImage(document.getElementById("chart"), { format: "png", filename: "ebird-lifelist", scale: 2 });
-});
+for (const btn of document.querySelectorAll("#dl-row button")) {
+  btn.addEventListener("click", () => {
+    const w = +btn.dataset.w;
+    // Fixed 1920x1080 layout so type stays proportional at every resolution;
+    // scale renders the canvas at the exact target pixel size.
+    Plotly.downloadAsImage(document.getElementById("chart"), {
+      format: "png", filename: `ebird-lifelist-${btn.dataset.name}`,
+      width: 1920, height: 1080, scale: w / 1920,
+    });
+  });
+}
 homeSel.addEventListener("change", rebuild);
 document.getElementById("file").addEventListener("change", (e) => e.target.files[0] && handleFile(e.target.files[0]));
 

@@ -10,7 +10,7 @@ const el = (id) => (els[id] ??= {
   id, style: {}, textContent: "", value: "2023", min: "",
   addEventListener() {}, classList: { toggle() {} },
 });
-globalThis.document = { getElementById: el };
+globalThis.document = { getElementById: el, querySelectorAll: () => [] };
 globalThis.window = { addEventListener: (t, fn) => { handlers[t] = fn; } };
 globalThis.location = { search: "" };
 let rendered = null;
@@ -28,7 +28,7 @@ test("dropping a CSV renders two traces plus trip annotations", async () => {
   assert.ok(rendered, "Plotly.react was not called");
   assert.equal(els["home-country"].value, "SG"); // sample.csv is mostly Singapore checklists
   assert.equal(els["year-wrap"].style.display, ""); // start-year appears after parse
-  assert.equal(els["download"].style.display, ""); // download button appears after parse
+  assert.equal(els["dl-row"].style.display, ""); // save buttons appear after parse
   assert.match(els["start-year"].innerHTML, /<option>2023<\/option>/);
   assert.equal(els["start-year"].value, "2023"); // defaults to first year in the data
   assert.equal(rendered.data.length, 3);

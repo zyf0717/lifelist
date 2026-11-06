@@ -33,7 +33,11 @@
   <div class="controls">
     <div class="row">
       <input id="file" type="file" accept=".csv,text/csv">
-      <button id="download" style="display:none">Download PNG</button>
+      <span id="dl-row" style="display:none">Save
+        <button data-w="1920" data-name="1080p">Full HD</button>
+        <button data-w="2560" data-name="1440p">QHD</button>
+        <button data-w="3840" data-name="2160p">4K</button>
+      </span>
     </div>
     <label id="year-wrap" style="display:none">Start year <select id="start-year"></select></label>
     <label id="home-wrap" style="display:none">Default <select id="home-country"></select></label>
