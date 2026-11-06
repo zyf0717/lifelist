@@ -8,6 +8,7 @@ const statusEl = document.getElementById("status");
 const errorEl = document.getElementById("error");
 const yearInput = document.getElementById("start-year");
 const homeSel = document.getElementById("home-country");
+const homeWrap = document.getElementById("home-wrap");
 let rows = null;
 let data = null;
 
@@ -38,6 +39,7 @@ function handleText(text) {
     return;
   }
   rows = parsed;
+  homeWrap.style.display = "";
   const counts = countryCounts(rows);
   homeSel.innerHTML = counts
     .map((c) => `<option value="${c.code}">${c.name} (${c.checklists})</option>`)
