@@ -13,7 +13,7 @@
   h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
   .controls { display: flex; gap: 16px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
   label { display: flex; gap: 8px; align-items: center; }
-  input[type=number] { width: 5.5em; background: #1e232a; color: #d6d9de; border: 1px solid #3a3f46; border-radius: 4px; padding: 4px; }
+  input[type=number], select { background: #1e232a; color: #d6d9de; border: 1px solid #3a3f46; border-radius: 4px; padding: 4px; }
   #status { color: #8b93a0; }
   #chart { width: 100%; height: 560px; }
   #dropzone { position: fixed; inset: 0; display: none; place-items: center;
@@ -30,6 +30,7 @@
   <h1>eBird Lifelist</h1>
   <div class="controls">
     <label>Start year <input id="start-year" type="number" min="1900" max="2100" value="2023"></label>
+    <label>Home <select id="home-country"></select></label>
     <label>or <input id="file" type="file" accept=".csv,text/csv"></label>
     <span id="status"></span>
   </div>

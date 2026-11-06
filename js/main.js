@@ -1,4 +1,4 @@
-import { parseCsv, buildSeries } from "./lifelist.js";
+import { parseCsv, buildSeries, countryCounts } from "./lifelist.js";
 import { makeFigure } from "./chart.js";
 
 const DEFAULT_START_YEAR = 2023;
@@ -7,6 +7,8 @@ const dropzone = document.getElementById("dropzone");
 const statusEl = document.getElementById("status");
 const errorEl = document.getElementById("error");
 const yearInput = document.getElementById("start-year");
+const homeSel = document.getElementById("home-country");
+let rows = null;
 let data = null;
 
 function render() {
@@ -30,16 +32,28 @@ function handleText(text) {
     errorEl.textContent = "That's a ZIP archive — My eBird zips the download. Unzip it and drop the CSV inside.";
     return;
   }
-  const rows = parseCsv(text);
-  if (!rows.length || !("Common Name" in rows[0]) || !("Date" in rows[0])) {
+  const parsed = parseCsv(text);
+  if (!parsed.length || !("Common Name" in parsed[0]) || !("Date" in parsed[0])) {
     errorEl.textContent = "That doesn't look like a My eBird export (missing Common Name / Date columns).";
     return;
   }
-  data = buildSeries(rows);
+  rows = parsed;
+  const counts = countryCounts(rows);
+  homeSel.innerHTML = counts
+    .map((c) => `<option value="${c.code}">${c.name} (${c.checklists})</option>`)
+    .join("");
+  homeSel.value = counts.length ? counts[0].code : "SG";
+  rebuild();
   const minYear = new Date(data.minDate).getUTCFullYear();
   yearInput.min = minYear;
   yearInput.value = Math.max(DEFAULT_START_YEAR, minYear);
   hint.style.display = "none";
+  render();
+}
+
+function rebuild() {
+  if (!rows) return;
+  data = buildSeries(rows, { homeCode: homeSel.value });
   statusEl.textContent = `${data.nSpecies} species · ${data.nChecklists} checklists`;
   render();
 }
@@ -47,6 +61,7 @@ function handleText(text) {
 const handleFile = (file) => file.text().then(handleText);
 
 yearInput.addEventListener("input", render);
+homeSel.addEventListener("change", rebuild);
 document.getElementById("file").addEventListener("change", (e) => e.target.files[0] && handleFile(e.target.files[0]));
 
 const showDrop = (on) => dropzone.classList.toggle("over", on);

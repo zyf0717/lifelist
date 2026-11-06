@@ -26,6 +26,7 @@ test("dropping a CSV renders two traces plus trip annotations", async () => {
   });
   await new Promise((r) => setImmediate(r));
   assert.ok(rendered, "Plotly.react was not called");
+  assert.equal(els["home-country"].value, "SG"); // sample.csv is mostly Singapore checklists
   assert.equal(rendered.data.length, 3);
   assert.equal(rendered.data[1].fill, "tonexty");
   assert.match(rendered.data[1].name, /^Life list \(\d+ species\)$/);

@@ -38,14 +38,30 @@ export function regionOf(stateProvince) {
   return COUNTRY[code] ?? code;
 }
 
-export function isSg(stateProvince) {
-  return String(stateProvince ?? "").startsWith("SG");
+export function isHome(stateProvince, homeCode) {
+  const sp = String(stateProvince ?? "");
+  return sp === homeCode || sp.startsWith(homeCode + "-");
+}
+
+// Countries present in the data, ranked by checklist count — feeds the home selector.
+export function countryCounts(rows) {
+  const byCode = new Map();
+  for (const r of rows) {
+    if (Number.isNaN(Date.parse(r["Date"])) || !r["Common Name"]) continue;
+    const code = String(r["State/Province"] ?? "").split("-")[0];
+    if (!code) continue;
+    if (!byCode.has(code)) byCode.set(code, new Set());
+    byCode.get(code).add(r["Submission ID"]);
+  }
+  return [...byCode.entries()]
+    .map(([code, subs]) => ({ code, name: COUNTRY[code] ?? code, checklists: subs.size }))
+    .sort((a, b) => b.checklists - a.checklists || a.name.localeCompare(b.name));
 }
 
 const DAY = 86400000;
 const isoDay = (ms) => new Date(ms).toISOString().slice(0, 10);
 
-export function buildSeries(rows, { minTripRows = 10, tripGapDays = 7 } = {}) {
+export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDays = 7 } = {}) {
   const obs = [];
   for (const r of rows) {
     const d = Date.parse(r["Date"]);
@@ -74,10 +90,10 @@ export function buildSeries(rows, { minTripRows = 10, tripGapDays = 7 } = {}) {
   const lifeList = toCurve(firstSeen);
   const withMedia = toCurve(firstMedia);
 
-  // trips: non-SG checklists clustered by <= tripGapDays gaps, min rows filter
+  // trips: non-home checklists clustered by <= tripGapDays gaps, min rows filter
   const byRegion = new Map();
   for (const o of obs) {
-    if (isSg(o.sp)) continue;
+    if (isHome(o.sp, homeCode)) continue;
     const region = regionOf(o.sp);
     if (!byRegion.has(region)) byRegion.set(region, []);
     byRegion.get(region).push(o);
