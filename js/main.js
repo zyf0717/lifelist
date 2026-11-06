@@ -56,7 +56,14 @@ function handleText(text) {
 
 function rebuild() {
   if (!rows) return;
-  data = buildSeries(rows, { homeCode: homeSel.value });
+  const d = buildSeries(rows, { homeCode: homeSel.value });
+  if (d.minDate === null) {
+    data = null;
+    errorEl.textContent = "No dated observations found in this file — check the Date column.";
+    if (typeof Plotly !== "undefined" && Plotly.purge) Plotly.purge("chart");
+    return;
+  }
+  data = d;
   render();
 }
 
