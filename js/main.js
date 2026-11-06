@@ -1,5 +1,5 @@
 import { parseCsv, buildSeries, countryCounts } from "./lifelist.js";
-import { makeFigure } from "./chart.js";
+import { makeFigure, BG } from "./chart.js";
 
 const hint = document.getElementById("hint");
 const dropzone = document.getElementById("dropzone");
@@ -76,17 +76,33 @@ overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.hid
 
 yearSel.addEventListener("change", render);
 
-// Export renders into an offscreen div at the exact target pixels with
-// export-tuned type (see makeFigure) — no fixed-1920 scale trick.
+// Export renders into an offscreen div slightly smaller than the target with
+// text-tight margins, then composites it centered on a full-size canvas: the
+// border is uniform empty space outside all text, not Plotly margin.
 async function renderExport(w) {
   const h = Math.round(w * 9 / 16);
-  const f = makeFigure(data, +yearSel.value, { exportSize: { width: w, height: h } });
+  const pad = Math.round(30 * h / 1080); // 30px per 1080p, scales with target
+  const fw = w - 2 * pad, fh = h - 2 * pad;
+  const f = makeFigure(data, +yearSel.value, { exportSize: { width: fw, height: fh } });
   const div = document.createElement("div");
-  div.style.cssText = `position:fixed;left:-99999px;top:0;width:${w}px;height:${h}px`;
+  div.style.cssText = `position:fixed;left:-99999px;top:0;width:${fw}px;height:${fh}px`;
   document.body.appendChild(div);
   try {
-    await Plotly.newPlot(div, f.data, f.layout, { width: w, height: h });
-    return await Plotly.toImage(div, { format: "png", width: w, height: h });
+    await Plotly.newPlot(div, f.data, f.layout, { width: fw, height: fh });
+    const figUrl = await Plotly.toImage(div, { format: "png", width: fw, height: fh });
+    const img = new Image();
+    await new Promise((res, rej) => {
+      img.onload = res;
+      img.onerror = () => rej(new Error("figure rasterize failed"));
+      img.src = figUrl;
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, pad, pad);
+    return canvas.toDataURL("image/png");
   } finally {
     Plotly.purge(div);
     div.remove();

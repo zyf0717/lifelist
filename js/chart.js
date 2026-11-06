@@ -1,6 +1,6 @@
 // Plotly figure spec for the life-list chart. Pure: returns {data, layout}.
 
-const BG = "#14171c", FG = "#d6d9de", LINE = "#5fb4d9", MEDIA = "#e0a458", TRIP = "#8b93a0";
+export const BG = "#14171c"; const FG = "#d6d9de", LINE = "#5fb4d9", MEDIA = "#e0a458", TRIP = "#8b93a0";
 
 const fmtMonthYear = (iso) =>
   new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
@@ -42,7 +42,9 @@ export function makeFigure(d, startYear, opts = {}) {
     paper_bgcolor: BG, plot_bgcolor: BG,
     font: { color: FG, ...(ex && { size: 12 * s * k }) },
     title: { text: title, font: { size: 15 * s * k } },
-    margin: ex ? { t: 80 * k, r: 60 * k, b: 70 * k, l: 110 * k } : { t: 150, r: 20, b: 50, l: 60 },
+    // Export: margins only as wide as the text needs; the outer border comes
+    // from compositing the figure onto a larger canvas (see main.js).
+    margin: ex ? { t: 45 * k, r: 15 * k, b: 45 * k, l: 85 * k } : { t: 150, r: 20, b: 50, l: 60 },
     xaxis: { range: [start, end], gridcolor: "#3a3f46", linecolor: "#3a3f46", dtick: "M12" },
     yaxis: { title: { text: "Species on life list" }, gridcolor: "#242930", zerolinecolor: "#3a3f46", linecolor: "#3a3f46",
       range: [0, Math.ceil((d.nSpecies * 1.12) / 50) * 50] },
