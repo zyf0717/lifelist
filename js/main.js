@@ -62,16 +62,37 @@ function rebuild() {
 
 const handleFile = (file) => file.text().then(handleText);
 
+// Every iOS browser is WebKit, and WebKit silently drops the programmatic
+// anchor click Plotly fires after its async SVG→canvas→toDataURL pipeline
+// (the click's user activation is gone by then). On iOS we render the PNG
+// with Plotly.toImage and let the user long-press the preview to save it.
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); // iPadOS 13+
+
+const overlay = document.getElementById("save-overlay");
+const overlayImg = document.getElementById("save-img");
+document.getElementById("save-close").addEventListener("click", () => { overlay.hidden = true; });
+overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.hidden = true; });
+
 yearSel.addEventListener("change", render);
 for (const btn of document.querySelectorAll("#dl-row button")) {
   btn.addEventListener("click", () => {
     const w = +btn.dataset.w;
     // Fixed 1920x1080 layout so type stays proportional at every resolution;
     // scale renders the canvas at the exact target pixel size.
-    Plotly.downloadAsImage(document.getElementById("chart"), {
+    const opts = {
       format: "png", filename: `ebird-lifelist-${btn.dataset.name}`,
       width: 1920, height: 1080, scale: w / 1920,
-    });
+    };
+    if (!isIOS) {
+      Plotly.downloadAsImage(document.getElementById("chart"), opts);
+      return;
+    }
+    btn.disabled = true;
+    Plotly.toImage(document.getElementById("chart"), opts)
+      .then((url) => { overlayImg.src = url; overlay.hidden = false; })
+      .catch((e) => { errorEl.textContent = `Export failed: ${e.message}`; })
+      .finally(() => { btn.disabled = false; });
   });
 }
 homeSel.addEventListener("change", rebuild);
