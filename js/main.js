@@ -75,24 +75,46 @@ document.getElementById("save-close").addEventListener("click", () => { overlay.
 overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.hidden = true; });
 
 yearSel.addEventListener("change", render);
+
+// Export renders into an offscreen div at the exact target pixels with
+// export-tuned type (see makeFigure) — no fixed-1920 scale trick.
+async function renderExport(w) {
+  const h = Math.round(w * 9 / 16);
+  const f = makeFigure(data, +yearSel.value, { exportSize: { width: w, height: h } });
+  const div = document.createElement("div");
+  div.style.cssText = `position:fixed;left:-99999px;top:0;width:${w}px;height:${h}px`;
+  document.body.appendChild(div);
+  try {
+    await Plotly.newPlot(div, f.data, f.layout, { width: w, height: h });
+    return await Plotly.toImage(div, { format: "png", width: w, height: h });
+  } finally {
+    Plotly.purge(div);
+    div.remove();
+  }
+}
+
 for (const btn of document.querySelectorAll("#dl-row button")) {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", async () => {
     const w = +btn.dataset.w;
-    // Fixed 1920x1080 layout so type stays proportional at every resolution;
-    // scale renders the canvas at the exact target pixel size.
-    const opts = {
-      format: "png", filename: `ebird-lifelist-${btn.dataset.name}`,
-      width: 1920, height: 1080, scale: w / 1920,
-    };
-    if (!isIOS) {
-      Plotly.downloadAsImage(document.getElementById("chart"), opts);
-      return;
-    }
     btn.disabled = true;
-    Plotly.toImage(document.getElementById("chart"), opts)
-      .then((url) => { overlayImg.src = url; overlay.hidden = false; })
-      .catch((e) => { errorEl.textContent = `Export failed: ${e.message}`; })
-      .finally(() => { btn.disabled = false; });
+    try {
+      const url = await renderExport(w);
+      if (isIOS) {
+        overlayImg.src = url;
+        overlay.hidden = false;
+      } else {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `ebird-lifelist-${btn.dataset.name}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+    } catch (e) {
+      errorEl.textContent = `Export failed: ${e.message}`;
+    } finally {
+      btn.disabled = false;
+    }
   });
 }
 homeSel.addEventListener("change", rebuild);

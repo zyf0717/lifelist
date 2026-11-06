@@ -5,7 +5,10 @@ const BG = "#14171c", FG = "#d6d9de", LINE = "#5fb4d9", MEDIA = "#e0a458", TRIP 
 const fmtMonthYear = (iso) =>
   new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
 
-export function makeFigure(d, startYear) {
+export function makeFigure(d, startYear, opts = {}) {
+  const ex = opts.exportSize || null; // {width,height}: PNG export rendered at exact pixels
+  const k = ex ? ex.height / 1080 : 1; // proportional px so exports match at any resolution
+  const s = ex ? 1.5 : 1; // export type is 1.5x larger relative to the image
   const start = `${startYear}-01-01`;
   const end = new Date(d.maxDate + 20 * 86400000).toISOString().slice(0, 10);
   const title = `Life list vs documented species — ${d.nChecklists} checklists (${fmtMonthYear(start)} – ${fmtMonthYear(end)})`;
@@ -15,9 +18,10 @@ export function makeFigure(d, startYear) {
     const mid = new Date((Date.parse(t.start) + Date.parse(t.end)) / 2).toISOString().slice(0, 10);
     shapes.push({ type: "line", xref: "x", yref: "paper", x0: mid, x1: mid, y0: 0, y1: 1,
       line: { color: TRIP, width: 1 }, opacity: 0.45 });
-    annotations.push({ text: t.region, xref: "x", yref: "paper", x: mid, y: 1.10,
+    annotations.push({ text: t.region, xref: "x", yref: "paper", x: mid,
+      y: ex ? 1 : 1.10, // export: labels hang inside the plot headroom, clear of the title
       textangle: -90, xanchor: "center", yanchor: "top", showarrow: false,
-      font: { size: 9, color: TRIP } });
+      font: { size: 9 * s * k, color: TRIP } });
   });
 
   const data = [
@@ -33,9 +37,10 @@ export function makeFigure(d, startYear) {
   ];
 
   const layout = {
-    paper_bgcolor: BG, plot_bgcolor: BG, font: { color: FG },
-    title: { text: title, font: { size: 15 } },
-    margin: { t: 150, r: 20, b: 50, l: 60 },
+    paper_bgcolor: BG, plot_bgcolor: BG,
+    font: { color: FG, ...(ex && { size: 12 * s * k }) },
+    title: { text: title, font: { size: 15 * s * k } },
+    margin: ex ? { t: 60 * k, r: 20 * k, b: 50 * k, l: 60 * k } : { t: 150, r: 20, b: 50, l: 60 },
     xaxis: { range: [start, end], gridcolor: "#3a3f46", linecolor: "#3a3f46", dtick: "M12" },
     yaxis: { title: { text: "Species on life list" }, gridcolor: "#242930", zerolinecolor: "#3a3f46", linecolor: "#3a3f46",
       range: [0, Math.ceil((d.nSpecies * 1.12) / 50) * 50] },
