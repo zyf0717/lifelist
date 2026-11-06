@@ -38,10 +38,10 @@ export function makeFigure(d, startYear, opts = {}) {
   // to the number of taxa first recorded before it, then keep points on or
   // after it. buildSeries() totals are untouched; shape "hv" renders the step.
   const display = (series) => {
-    const before = series.x.reduce((n, x) => n + (x < start ? 1 : 0), 0);
+    const before = series.x.filter((x) => x < start).length;
     const x = [], y = [];
     if (before > 0) { x.push(start); y.push(before); }
-    series.x.forEach((d, i) => { if (d >= start) { x.push(d); y.push(series.y[i]); } });
+    series.x.forEach((dt, i) => { if (dt >= start) { x.push(dt); y.push(series.y[i]); } });
     return { x, y };
   };
   const life = display(d.lifeList);

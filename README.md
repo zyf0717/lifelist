@@ -19,8 +19,8 @@ Live: https://zyf0717.github.io/lifelist · Demo with sample data: add `?demo` t
 - **Trip labels** — checklists outside your home country clustered by ≤7-day gaps; trips with ≥10 rows
   get a marker. Default country is inferred from the file: the country with the highest share of
   checklists wins; ties break by most recent observation, then total rows, then name. Start year is
-  a dropdown of the years present in the data, defaulting to the
-  first year. Both selectors appear only after the file parses.
+  a dropdown of the years present in the data, defaulting to the first year. Both selectors appear
+  only after the file parses.
 
 ## Development
 
