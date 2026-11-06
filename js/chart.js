@@ -18,13 +18,15 @@ export function makeFigure(d, startYear, opts = {}) {
   // anchored at the line (owner call 2026-11-06). Label-on-label overlap in
   // dense clusters is accepted; the top margin grows to keep the title clear.
   const tripFont = 9 * s * k;
-  const maxRise = d.trips.reduce((m, t) => Math.max(m, t.region.length), 0) * 0.62 * tripFont * Math.SQRT1_2;
+  const maxW = d.trips.reduce((m, t) => Math.max(m, t.region.length), 0) * 0.62 * tripFont;
+  const maxRise = (maxW + 1.2 * tripFont) * Math.SQRT1_2; // vertical extent of the tallest 45° label
+  const maxRun = maxW * Math.SQRT1_2; // horizontal extent of the rightmost 45° label
   d.trips.forEach((t) => {
     const mid = new Date((Date.parse(t.start) + Date.parse(t.end)) / 2).toISOString().slice(0, 10);
     shapes.push({ type: "line", xref: "x", yref: "paper", x0: mid, x1: mid, y0: 0, y1: 1,
       line: { color: TRIP, width: 1 }, opacity: 0.45 });
     annotations.push({ text: t.region, xref: "x", yref: "paper", x: mid,
-      y: 1, textangle: 45, xanchor: "left", yanchor: "bottom", showarrow: false,
+      y: 1, textangle: -45, xanchor: "left", yanchor: "bottom", showarrow: false,
       font: { size: tripFont, color: TRIP } });
   });
 
@@ -48,7 +50,7 @@ export function makeFigure(d, startYear, opts = {}) {
     // from compositing the figure onto a larger canvas (see main.js).
     // b has headroom so year tick labels can never clip at the canvas edge.
     margin: ex
-      ? { t: 45 * k + maxRise, r: 15 * k, b: 55 * k, l: 85 * k }
+      ? { t: 45 * k + maxRise, r: 15 * k + maxRun, b: 55 * k, l: 85 * k }
       : { t: 150, r: 20, b: 50, l: 60 },
     xaxis: { range: [start, end], gridcolor: "#3a3f46", linecolor: "#3a3f46", dtick: "M12" },
     yaxis: { title: { text: "Species on life list" }, gridcolor: "#242930", zerolinecolor: "#3a3f46", linecolor: "#3a3f46",
