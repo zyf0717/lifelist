@@ -111,11 +111,16 @@ test("M1: media curve is dated by observation, and wording never claims upload d
 });
 
 test("rows with invalid dates are ignored", () => {
-  const rows = [
-    { "Common Name": "X", Date: "nope", "Submission ID": "s1", "State/Province": "SG-", "ML Catalog Numbers": "" },
-    { "Common Name": "Y", Date: "2023-01-01", "Submission ID": "s2", "State/Province": "SG-", "ML Catalog Numbers": "" },
-  ];
-  assert.equal(buildSeries(rows).nSpecies, 1);
+  const rows = parseCsv(`Submission ID,Common Name,Date,State/Province
+s1,A,2024-02-29,SG-
+s2,B,2025-02-29,JP-13
+s3,C,2026-2-01,JP-13
+s4,D,nope,JP-13
+`);
+  const d = buildSeries(rows);
+  assert.deepEqual(d.lifeList.x, ["2024-02-29"]);
+  assert.deepEqual(d.years, ["2024"]);
+  assert.deepEqual(countryCounts(rows).map((c) => c.code), ["SG"]);
 });
 
 test("H2: extrema are tracked incrementally, no array spread", () => {
@@ -156,18 +161,19 @@ test("M2: later start year keeps the cumulative baseline as a synthetic step poi
   assert.deepEqual(late.data[2].x, ["2025-01-01"]);
   assert.deepEqual(late.data[2].y, [1]); // media taxon A was recorded before 2025
 
-  // Year between sightings: baseline point then the on/after points.
+  // Year between sightings: baseline, on/after points, and the final plateau.
   const mid = makeFigure(d, 2021);
-  assert.deepEqual(mid.data[1].x, ["2021-01-01", "2021-07-01"]);
-  assert.deepEqual(mid.data[1].y, [1, 2]);
-  assert.deepEqual(mid.data[2].x, ["2021-01-01"]);
-  assert.deepEqual(mid.data[2].y, [1]);
+  const end = "2021-07-21";
+  assert.deepEqual(mid.data[1].x, ["2021-01-01", "2021-07-01", end]);
+  assert.deepEqual(mid.data[1].y, [1, 2, 2]);
+  assert.deepEqual(mid.data[2].x, ["2021-01-01", end]);
+  assert.deepEqual(mid.data[2].y, [1, 1]);
 
   // Sighting exactly on January 1: it is an on/after point, not double-counted.
   const jan1 = buildSeries([mk("A a", "2021-01-01"), mk("B b", "2022-03-01")]);
   const f = makeFigure(jan1, 2021);
-  assert.deepEqual(f.data[1].x, ["2021-01-01", "2022-03-01"]);
-  assert.deepEqual(f.data[1].y, [1, 2]);
+  assert.deepEqual(f.data[1].x, ["2021-01-01", "2022-03-01", "2022-03-21"]);
+  assert.deepEqual(f.data[1].y, [1, 2, 2]);
 
   // Step shape kept; baseline fill follows the displayed life-list x.
   assert.equal(mid.data[1].line.shape, "hv");

@@ -46,6 +46,14 @@ export function isHome(stateProvince, homeCode) {
   return sp === homeCode || sp.startsWith(homeCode + "-");
 }
 
+const DAY = 86400000;
+const isoDay = (ms) => new Date(ms).toISOString().slice(0, 10);
+
+function observationDate(value) {
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(value) ? Date.parse(value) : NaN;
+  return Number.isFinite(date) && isoDay(date) === value ? date : NaN;
+}
+
 // Countries present in the data, ranked by checklist share — feeds the home
 // selector, whose default is the top entry. Ties on checklist count break by
 // most recent observation (home is where you bird now), then total observation
@@ -53,13 +61,13 @@ export function isHome(stateProvince, homeCode) {
 export function countryCounts(rows) {
   const byCode = new Map();
   for (const r of rows) {
-    const d = Date.parse(r["Date"]);
+    const d = observationDate(r.Date);
     if (Number.isNaN(d) || !r["Common Name"]) continue;
     const code = String(r["State/Province"] ?? "").split("-")[0];
     if (!code) continue;
     if (!byCode.has(code)) byCode.set(code, { subs: new Set(), rows: 0, last: -Infinity });
     const c = byCode.get(code);
-    c.subs.add(r["Submission ID"]);
+    if (r["Submission ID"]) c.subs.add(r["Submission ID"]);
     c.rows += 1;
     if (d > c.last) c.last = d;
   }
@@ -96,15 +104,14 @@ export function speciesKey(row) {
   return words.slice(0, 2).join(" ").toLowerCase();
 }
 
-const DAY = 86400000;
-const isoDay = (ms) => new Date(ms).toISOString().slice(0, 10);
-
 export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDays = 7 } = {}) {
   const obs = [];
+  const years = new Set();
   let minDate = Infinity, maxDate = -Infinity; // tracked incrementally: spread on 100k+ arrays throws RangeError
   for (const r of rows) {
-    const d = Date.parse(r["Date"]);
+    const d = observationDate(r.Date);
     if (Number.isNaN(d) || !r["Common Name"]) continue;
+    years.add(r.Date.slice(0, 4));
     if (d < minDate) minDate = d;
     if (d > maxDate) maxDate = d;
     obs.push({
@@ -120,7 +127,7 @@ export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDa
   const firstMedia = new Map();
   const submissions = new Set();
   for (const o of obs) {
-    submissions.add(o.submission);
+    if (o.submission) submissions.add(o.submission);
     if (o.taxon === null) continue; // excluded: unknown / hybrid / domestic
     if (!firstSeen.has(o.taxon) || o.date < firstSeen.get(o.taxon)) firstSeen.set(o.taxon, o.date);
     if (o.media && (!firstMedia.has(o.taxon) || o.date < firstMedia.get(o.taxon))) firstMedia.set(o.taxon, o.date);
@@ -159,7 +166,7 @@ export function buildSeries(rows, { homeCode = "SG", minTripRows = 10, tripGapDa
   trips.sort((a, b) => (a.start < b.start ? -1 : 1));
 
   return {
-    lifeList, withMedia, trips,
+    lifeList, withMedia, trips, years: [...years].sort(),
     nSpecies: lifeList.y.length,
     nWithMedia: withMedia.y.length,
     nChecklists: submissions.size,

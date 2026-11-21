@@ -11,7 +11,9 @@ export function makeFigure(d, startYear, opts = {}) {
   const s = ex ? 1.5 : 1; // export type is 1.5x larger relative to the image
   const start = `${startYear}-01-01`;
   const end = new Date(d.maxDate + 20 * 86400000).toISOString().slice(0, 10);
-  const title = `Life list vs species with media — ${d.nChecklists} checklists (${fmtMonthYear(start)} – ${fmtMonthYear(end)})`;
+  const lastObservation = new Date(d.maxDate).toISOString().slice(0, 10);
+  const summary = `${d.nChecklists} checklists (${fmtMonthYear(start)} – ${fmtMonthYear(lastObservation)})`;
+  const title = `Life list vs species with media${ex ? " — " : "<br>"}${summary}`;
 
   const shapes = [], annotations = [];
   // Trip labels sit at 45° up-right from the top of their vertical line,
@@ -36,12 +38,13 @@ export function makeFigure(d, startYear, opts = {}) {
   // Preserve the cumulative baseline when the start year skips early
   // sightings: prepend a synthetic step point at the start date with y equal
   // to the number of species first recorded before it, then keep points on or
-  // after it. buildSeries() totals are untouched; shape "hv" renders the step.
+  // after it. Extend the final total to the right edge, including one-point curves.
   const display = (series) => {
     const before = series.x.filter((x) => x < start).length;
     const x = [], y = [];
     if (before > 0) { x.push(start); y.push(before); }
     series.x.forEach((dt, i) => { if (dt >= start) { x.push(dt); y.push(series.y[i]); } });
+    if (x.length && x.at(-1) < end) { x.push(end); y.push(y.at(-1)); }
     return { x, y };
   };
   const life = display(d.lifeList);

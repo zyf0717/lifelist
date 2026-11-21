@@ -19,7 +19,7 @@ function render() {
     return;
   }
   try {
-    const f = makeFigure(data, +yearSel.value);
+    const f = makeFigure(data, yearSel.value);
     Plotly.react("chart", f.data, f.layout, { responsive: true });
     errorEl.textContent = "";
   } catch (e) {
@@ -34,36 +34,29 @@ function handleText(text) {
     return;
   }
   const parsed = parseCsv(text);
-  if (!parsed.length || !("Common Name" in parsed[0]) || !("Date" in parsed[0])) {
-    errorEl.textContent = "That doesn't look like a My eBird export (missing Common Name / Date columns).";
+  if (!parsed.length) {
+    errorEl.textContent = "No observations found in this file.";
+    return;
+  }
+  const missing = ["Common Name", "Date", "Submission ID"].filter((column) => !Object.hasOwn(parsed[0], column));
+  if (missing.length) {
+    errorEl.textContent = `That doesn't look like a My eBird export (missing columns: ${missing.join(", ")}).`;
+    return;
+  }
+  const counts = countryCounts(parsed);
+  const nextData = buildSeries(parsed, { homeCode: counts[0]?.code ?? "" });
+  if (nextData.minDate === null) {
+    errorEl.textContent = "No dated observations found in this file — check the Date column (YYYY-MM-DD).";
     return;
   }
   rows = parsed;
-  const years = [...new Set(rows.map((r) => String(r.Date).slice(0, 4)))].filter((y) => /^\d{4}$/.test(y)).sort();
-  yearSel.innerHTML = years.map((y) => `<option>${y}</option>`).join("");
-  yearSel.value = years[0];
+  data = nextData;
+  yearSel.replaceChildren(...data.years.map((year) => new Option(year)));
+  homeSel.replaceChildren(...counts.map((c) => new Option(`${c.name} (${c.checklists})`, c.code)));
   yearWrap.style.display = "";
   homeWrap.style.display = "";
   dlRow.style.display = "";
-  const counts = countryCounts(rows);
-  homeSel.innerHTML = counts
-    .map((c) => `<option value="${c.code}">${c.name} (${c.checklists})</option>`)
-    .join("");
-  homeSel.value = counts.length ? counts[0].code : "SG";
-  rebuild();
   hint.style.display = "none";
-}
-
-function rebuild() {
-  if (!rows) return;
-  const d = buildSeries(rows, { homeCode: homeSel.value });
-  if (d.minDate === null) {
-    data = null;
-    errorEl.textContent = "No dated observations found in this file — check the Date column.";
-    if (typeof Plotly !== "undefined" && Plotly.purge) Plotly.purge("chart");
-    return;
-  }
-  data = d;
   render();
 }
 
@@ -90,7 +83,7 @@ async function renderExport(w) {
   const h = Math.round(w * 9 / 16);
   const pad = Math.round(30 * h / 1080); // 30px per 1080p, scales with target
   const fw = w - 2 * pad, fh = h - 2 * pad;
-  const f = makeFigure(data, +yearSel.value, { exportSize: { width: fw, height: fh } });
+  const f = makeFigure(data, yearSel.value, { exportSize: { width: fw, height: fh } });
   const div = document.createElement("div");
   div.style.cssText = `position:fixed;left:-99999px;top:0;width:${fw}px;height:${fh}px`;
   document.body.appendChild(div);
@@ -140,7 +133,11 @@ for (const btn of document.querySelectorAll("#dl-row button")) {
     }
   });
 }
-homeSel.addEventListener("change", rebuild);
+homeSel.addEventListener("change", () => {
+  if (!rows) return;
+  data = buildSeries(rows, { homeCode: homeSel.value });
+  render();
+});
 document.getElementById("file").addEventListener("change", (e) => e.target.files[0] && handleFile(e.target.files[0]));
 
 const showDrop = (on) => dropzone.classList.toggle("over", on);
